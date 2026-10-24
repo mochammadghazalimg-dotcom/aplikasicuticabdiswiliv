@@ -40,6 +40,13 @@
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @media print {
+            body * { visibility: hidden; }
+            #area-cetak-pdf, #area-cetak-pdf * { visibility: visible; }
+            #area-cetak-pdf { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; box-shadow: none; border: none; }
+            .print\:hidden { display: none !important; }
+            .print\:block { display: block !important; }
+        }
     </style>
 </head>
 <body class="bg-edu-bg font-sans text-gray-800 h-screen flex overflow-hidden">
@@ -445,6 +452,74 @@
         </div>
     </div>
 
+    <!-- Modal Detail Riwayat Cuti (Popup) -->
+    <div id="modal-detail-cuti" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-detail-cuti-content">
+            <div class="bg-edu-blue text-white px-6 py-4 flex justify-between items-center print:hidden">
+                <h3 class="font-bold text-lg"><i class="fas fa-file-alt mr-2"></i> Detail Pengajuan Cuti</h3>
+                <button onclick="closeModal('modal-detail-cuti')" class="text-blue-200 hover:text-white transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Area yang akan dicetak -->
+            <div id="area-cetak-pdf" class="p-8 bg-white text-gray-800 relative">
+                <!-- Header Cetak -->
+                <div class="text-center mb-6 border-b-2 border-gray-800 pb-4 hidden print:block">
+                    <h2 class="text-xl font-bold uppercase">Formulir Permintaan dan Pemberian Cuti</h2>
+                    <p class="text-sm font-semibold">Cabang Dinas Pendidikan Wilayah IV</p>
+                </div>
+
+                <div class="space-y-4 text-sm">
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">ID Pengajuan</div>
+                        <div class="col-span-2 font-medium" id="det-id"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Tanggal Pengajuan</div>
+                        <div class="col-span-2 font-medium" id="det-tglAju"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Nama Pegawai</div>
+                        <div class="col-span-2 font-medium uppercase" id="det-nama"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">NIP / NI PPPK</div>
+                        <div class="col-span-2 font-mono font-medium" id="det-nip"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Jenis Cuti</div>
+                        <div class="col-span-2 font-bold text-edu-blue" id="det-jenis"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Lama Cuti</div>
+                        <div class="col-span-2 font-medium"><span id="det-durasi"></span> <span id="det-satuan"></span></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Tanggal Cuti</div>
+                        <div class="col-span-2 font-medium"><span id="det-tglMulai"></span> s.d. <span id="det-tglAkhir"></span></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 border-b border-gray-100 pb-2">
+                        <div class="font-semibold text-gray-600">Alasan Cuti</div>
+                        <div class="col-span-2 font-medium bg-gray-50 p-2 rounded border border-gray-200" id="det-alasan"></div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 pb-2">
+                        <div class="font-semibold text-gray-600">Status Persetujuan</div>
+                        <div class="col-span-2 font-bold" id="det-status"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 print:hidden">
+                <button type="button" onclick="closeModal('modal-detail-cuti')" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium transition">Tutup</button>
+                <button type="button" onclick="cetakPDF()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition shadow flex items-center gap-2">
+                    <i class="fas fa-file-pdf"></i> Cetak PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Form Tambah/Edit Akun (RESET PASSWORD DLL) -->
     <div id="modal-akun" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-akun-content">
@@ -771,22 +846,26 @@
                 if(keyword && !c.nama.toLowerCase().includes(keyword) && !c.nip.toString().includes(keyword)) return;
                 const statusColor = c.status === 'Disetujui' ? 'text-green-600 bg-green-50' : c.status === 'Ditolak' ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50';
                 
-                let aksiHtml = `<button class="text-gray-300 cursor-not-allowed px-2 py-1" title="Data Terkunci"><i class="fas fa-lock"></i></button>`;
-                // LOGIKA INI MEMASTIKAN HANYA SUPERADMIN YANG BISA EDIT CUTI
+                // Tambahkan tombol Lihat Detail untuk Admin/Superadmin
+                let aksiHtml = `<button onclick="showDetailCuti(${c.id})" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded mx-1" title="Lihat Detail Pengajuan"><i class="fas fa-eye"></i></button>`;
+                
+                // Jika superadmin, tambahkan tombol setuju/tolak
                 if (currentUser && currentUser.role.trim().toLowerCase() === 'superadmin') {
-                     aksiHtml = `
+                     aksiHtml += `
                         <button onclick="prosesCuti(${c.id}, 'Ditolak')" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded" title="Batalkan/Tolak Cuti"><i class="fas fa-times-circle"></i></button>
                         <button onclick="prosesCuti(${c.id}, 'Disetujui')" class="text-green-500 hover:bg-green-50 px-2 py-1 rounded" title="Setujui Cuti"><i class="fas fa-check-circle"></i></button>
                      `;
                 }
+                
+                // Klik Nama akan langsung membuka detail
                 tbody.innerHTML += `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                         <td class="py-3 px-4 whitespace-nowrap">${c.tglAju}</td>
-                        <td class="py-3 px-4">${c.nama}<br><span class="text-xs text-gray-400">${c.nip}</span></td>
+                        <td class="py-3 px-4 cursor-pointer hover:text-edu-blue" onclick="showDetailCuti(${c.id})">${c.nama}<br><span class="text-xs text-gray-400">${c.nip}</span></td>
                         <td class="py-3 px-4 font-medium">${c.jenis}</td>
                         <td class="py-3 px-4">${c.durasi} ${c.satuan}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs font-semibold ${statusColor}">${c.status}</span></td>
-                        <td class="py-3 px-4 text-center">${aksiHtml}</td>
+                        <td class="py-3 px-4 text-center whitespace-nowrap">${aksiHtml}</td>
                     </tr>
                 `;
             });
@@ -825,7 +904,7 @@
             // Memanggil fungsi bawaan browser untuk cetak halaman/PDF
             window.print();
         }
-        
+
         function editASN(nip) {
             const asn = dbASN.find(a => a.nip == nip);
             if(asn) {
@@ -889,8 +968,9 @@
             const mulai = document.getElementById('cuti-mulai').value;
             const durasi = parseInt(document.getElementById('cuti-durasi').value);
             const satuan = document.getElementById('cuti-satuan').value;
+            const alasan = document.getElementById('cuti-alasan').value; // AMBIL ALASAN
 
-            if(!nip || !jenis || !mulai || !durasi) { showMessage('Validasi Gagal', 'Mohon lengkapi semua isian form.', 'warning'); return; }
+            if(!nip || !jenis || !mulai || !durasi || !alasan) { showMessage('Validasi Gagal', 'Mohon lengkapi semua isian form.', 'warning'); return; }
 
             const asn = dbASN.find(a => a.nip == nip);
             const maxAllowed = ATURAN_CUTI[asn.status].max[jenis];
@@ -921,11 +1001,12 @@
             asn.cutiDiambil[jenis] += durasi;
 
             google.script.run.withSuccessHandler(function() {
-                dbCuti.push({ id: newId, nip: asn.nip, nama: asn.nama, jenis: jenis, tglMulai: mulai, tglAkhir: tglAkhir, durasi: durasi, satuan: satuan, status: 'Disetujui', tglAju: today });
+                // Simpan variabel alasan
+                dbCuti.push({ id: newId, nip: asn.nip, nama: asn.nama, jenis: jenis, tglMulai: mulai, tglAkhir: tglAkhir, durasi: durasi, satuan: satuan, status: 'Disetujui', tglAju: today, alasan: alasan });
                 document.getElementById('btn-submit-cuti').innerText = "Ajukan Cuti";
                 showMessage('Berhasil Disetujui', `Pengajuan cuti otomatis disetujui, dan kuota telah dipotong oleh sistem pada Spreadsheet.`, 'success');
                 navigate('riwayat');
-            }).simpanCuti(newId, asn.nip, asn.nama, jenis, mulai, tglAkhir, durasi, satuan, 'Disetujui', today, JSON.stringify(asn.cutiDiambil));
+            }).simpanCuti(newId, asn.nip, asn.nama, jenis, mulai, tglAkhir, durasi, satuan, 'Disetujui', today, alasan, JSON.stringify(asn.cutiDiambil));
         }
 
         function prosesCuti(id, statusTujuan) {
