@@ -676,7 +676,8 @@
                         <td class="py-3 px-4">${a.jabatan}</td>
                         <td class="py-3 px-4">${a.sekolah}</td>
                         <td class="py-3 px-4 text-center">
-                            <button class="text-blue-500 hover:text-blue-700 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
+                            <!-- Tombol aksi edit diaktifkan -->
+                            <button onclick="editASN('${a.nip}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
                         </td>
                     </tr>
                 `;
@@ -706,11 +707,19 @@
                 document.getElementById('asn-status-info').classList.add('hidden');
                 showMessage('Data Tidak Ditemukan', 'DATA ASN TIDAK TERSEDIA SILAHKAN INPUT DI MENU DATA ASN TERLEBIH DAHULU', 'error');
             } else {
+                // PENGECEKAN DATA TIDAK LENGKAP
+                if (!asn.nama || !asn.jabatan || !asn.sekolah || asn.jabatan.trim() === '-' || asn.sekolah.trim() === '-') {
+                    document.getElementById('cuti-jenis').disabled = true;
+                    document.getElementById('cuti-jenis').innerHTML = '<option value="">-- Data Tidak Lengkap --</option>';
+                    showMessage('Peringatan', 'DATA PEGAWAI BELUM LENGKAP SILAHKAN LENGKAPI DI MENU DATA PEGAWAI', 'warning');
+                    return;
+                }
+                
                 document.getElementById('detail-nama').innerText = asn.nama;
                 document.getElementById('detail-nip').innerText = asn.nip;
                 document.getElementById('detail-status').innerText = asn.status;
                 document.getElementById('detail-jabatan').innerText = asn.jabatan;
-                document.getElementById('detail-sekolah').innerText = asn.sekolah || '-';
+                document.getElementById('detail-sekolah').innerText = asn.sekolah;
                 document.getElementById('asn-detail-card').classList.remove('hidden');
                 updateFormRules(asn.nip);
             }
@@ -783,9 +792,35 @@
             });
         }
 
+        function editASN(nip) {
+            const asn = dbASN.find(a => a.nip == nip);
+            if(asn) {
+                // Membuka modal tambah/edit dan mengisi data (termasuk untuk edit golongan kedepannya)
+                document.getElementById('new-nip').value = asn.nip;
+                document.getElementById('new-nip').disabled = true; // Kunci NIP agar tidak diubah
+                document.getElementById('new-nama').value = asn.nama;
+                document.getElementById('new-status').value = asn.status;
+                document.getElementById('new-jabatan').value = asn.jabatan;
+                document.getElementById('new-sekolah').value = asn.sekolah;
+                
+                document.getElementById('btn-submit-asn').innerText = "Update Data";
+                showModalTambahASN();
+            }
+        }
+
         function handleTambahASN(e) {
             e.preventDefault();
             const nip = document.getElementById('new-nip').value;
+            
+            // CEK DUPLIKAT MANUAL
+            const isDuplicate = dbASN.some(a => a.nip == nip);
+            const isEditMode = document.getElementById('btn-submit-asn').innerText === "Update Data";
+            
+            if (isDuplicate && !isEditMode) {
+                showMessage('Peringatan', 'DATA ASN SUDAH TERSEDIA CEK DATA PEGAWAI TERLEBIH DAHULU SEBELUM MENAMBAH', 'warning');
+                return;
+            }
+
             const nama = document.getElementById('new-nama').value;
             const status = document.getElementById('new-status').value;
             const jabatan = document.getElementById('new-jabatan').value;
@@ -794,16 +829,23 @@
             document.getElementById('btn-submit-asn').innerText = "Menyimpan...";
 
             google.script.run.withSuccessHandler(function() {
-                dbASN.push({ nip, nama, status, jabatan, sekolah, cutiDiambil: { 'Tahunan': 0, 'Besar': 0, 'Sakit': 0, 'Melahirkan': 0, 'Alasan Penting': 0, 'CLTN': 0 } });
+                if (isEditMode) {
+                    const idx = dbASN.findIndex(a => a.nip == nip);
+                    if(idx > -1) { dbASN[idx].nama = nama; dbASN[idx].status = status; dbASN[idx].jabatan = jabatan; dbASN[idx].sekolah = sekolah; }
+                } else {
+                    dbASN.push({ nip, nama, status, jabatan, sekolah, cutiDiambil: { 'Tahunan': 0, 'Besar': 0, 'Sakit': 0, 'Melahirkan': 0, 'Alasan Penting': 0, 'CLTN': 0 } });
+                }
+                
                 closeModal('modal-tambah-asn');
                 document.getElementById('new-nip').value = '';
+                document.getElementById('new-nip').disabled = false;
                 document.getElementById('new-nama').value = '';
                 document.getElementById('new-jabatan').value = '';
                 document.getElementById('new-sekolah').value = '';
                 document.getElementById('btn-submit-asn').innerText = "Simpan Data";
-                showMessage('Berhasil', `Data pegawai ${nama} (${status}) berhasil ditambahkan ke Spreadsheet.`, 'success');
+                showMessage('Berhasil', `Data pegawai ${nama} berhasil disimpan.`, 'success');
                 if(!document.getElementById('view-data-asn').classList.contains('hidden')) loadDataASN();
-            }).simpanASN(nip, nama, status, jabatan, sekolah);
+            }).simpanASN(nip, nama, status, jabatan, sekolah); // Catatan: Jika ingin edit tersimpan di excel, pastikan fungsi simpanASN di Code.gs dimodifikasi menerima parameter edit.
         }
 
         function handlePengajuanCuti(e) {
@@ -901,6 +943,18 @@
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
                     
                     if(jsonData.length > 0) {
+                        // CEK DUPLIKAT DARI EXCEL
+                        const hasDuplicate = jsonData.some(row => {
+                            const nipRow = row['NIP'] || row['NIP / NI PPPK'] || row['nip'] || '-';
+                            return dbASN.some(a => a.nip == nipRow);
+                        });
+
+                        if (hasDuplicate) {
+                            showMessage('Peringatan', 'DATA ASN SUDAH TERSEDIA CEK DATA PEGAWAI TERLEBIH DAHULU SEBELUM MENAMBAH', 'warning');
+                            event.target.value = ''; 
+                            return;
+                        }
+
                         showMessage('Memproses Data...', 'Menyimpan ribuan data ke Google Sheets, Mohon Tunggu.', 'info');
                         google.script.run.withSuccessHandler(function() {
                             showMessage('Unggah Berhasil', `Data dari file ${file.name} berhasil disimpan ke Spreadsheet! Silahkan muat ulang aplikasi untuk melihat perubahannya.`, 'success');
