@@ -75,11 +75,32 @@ function simpanAkun(id, nip, nama, username, password, role, isEdit) {
   return "Saved";
 }
 
-function simpanASN(nip, nama, status, jabatan, sekolah) {
+// SIMPAN & UPDATE DATA ASN KE SPREADSHEET (DENGAN PROTEKSI DUPLIKAT)
+function simpanASN(nip, nama, status, jabatan, sekolah, isEdit) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
-  var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
-  sheet.appendRow([nip, nama, status, jabatan, sekolah, cutiStr]);
-  return "Saved";
+  var data = sheet.getDataRange().getValues();
+
+  if (isEdit) {
+    // 1. JIKA EDIT: Cari NIP yang cocok lalu TIMPA/UPDATE datanya (TIDAK MENAMBAH BARIS BARU)
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0] == nip) {
+        sheet.getRange(i + 1, 2, 1, 4).setValues([[nama, status, jabatan, sekolah]]);
+        return "Edited";
+      }
+    }
+  } else {
+    // 2. JIKA TAMBAH MANUAL: Cek apakah NIP sudah ada di spreadsheet
+    for (var j = 1; j < data.length; j++) {
+      if (data[j][0] == nip) {
+        return "Duplicate"; // TERTOLAK KARENA DUPLIKAT
+      }
+    }
+    
+    // Jika NIP belum ada, tambahkan baris baru
+    var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
+    sheet.appendRow([nip, nama, status, jabatan, sekolah, cutiStr]);
+    return "Saved";
+  }
 }
 
 // UPDATE: Penambahan parameter "alasan" di dalam fungsi simpanCuti
