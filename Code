@@ -1,0 +1,21 @@
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('SIM CUTI ASN - Cabdin Wil IV')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+// Fungsi untuk mengambil data akun dari Sheet untuk ditampilkan di Web
+function getAkunDariSheet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Akun_Admin");
+  var data = sheet.getDataRange().getValues();
+  data.shift(); // Menghapus baris pertama (Header) agar tidak ikut terbaca sebagai data
+  return data;
+}
+
+// Fungsi untuk menyimpan data akun baru dari Web ke Sheet
+function simpanAkunKeSheet(nip, nama, username, password, role) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Akun_Admin");
+  // Menambahkan baris baru ke paling bawah data
+  sheet.appendRow([nip, nama, username, password, role]);
+  return "Berhasil disimpan!";
+}
