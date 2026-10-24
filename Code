@@ -1,21 +1,134 @@
+// Ganti dengan ID Spreadsheet Anda (sudah saya sesuaikan)
+const SHEET_ID = '1K4Qa62tNBK7yHU32g43RoeANaV8sqXa_5LcGTBxYQJw';
+
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('SIM CUTI ASN - Cabdin Wil IV')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
-// Fungsi untuk mengambil data akun dari Sheet untuk ditampilkan di Web
-function getAkunDariSheet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Akun_Admin");
-  var data = sheet.getDataRange().getValues();
-  data.shift(); // Menghapus baris pertama (Header) agar tidak ikut terbaca sebagai data
-  return data;
+
+// Fungsi untuk memastikan sheet dan header tabel ada
+function initSheet(sheetName, headers) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    sheet.appendRow(headers);
+  }
+  return sheet;
 }
 
-// Fungsi untuk menyimpan data akun baru dari Web ke Sheet
-function simpanAkunKeSheet(nip, nama, username, password, role) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Akun_Admin");
-  // Menambahkan baris baru ke paling bawah data
-  sheet.appendRow([nip, nama, username, password, role]);
-  return "Berhasil disimpan!";
+// ---------------------------------------------------------
+// FUNGSI LOAD DATA (Dipanggil saat web pertama kali dibuka)
+// ---------------------------------------------------------
+function getDB() {
+  // Pastikan tabel siap
+  initSheet("Akun_Admin", ["NIP", "Nama", "Username", "Password", "Role", "ID"]);
+  initSheet("Data_ASN", ["NIP", "Nama", "Status", "Jabatan", "Sekolah", "CutiDiambil"]);
+  initSheet("Riwayat_Cuti", ["ID", "NIP", "Nama", "Jenis", "TglMulai", "TglAkhir", "Durasi", "Satuan", "Status", "TglAju"]);
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  
+  // Ambil Data Akun
+  var sAkun = ss.getSheetByName("Akun_Admin").getDataRange().getValues().slice(1);
+  var dbUsers = sAkun.map(function(r) { 
+    return { nip: r[0], nama: r[1], username: r[2], password: r[3], role: r[4] ? r[4] : 'Admin', id: r[5] ? r[5] : Date.now() + Math.floor(Math.random()*1000) }; 
+  }).filter(function(u){ return u.username; });
+
+  // Ambil Data ASN
+  var sASN = ss.getSheetByName("Data_ASN").getDataRange().getValues().slice(1);
+  var dbASN = sASN.map(function(r) { 
+    return { nip: r[0], nama: r[1], status: r[2], jabatan: r[3], sekolah: r[4], cutiDiambil: r[5] ? JSON.parse(r[5]) : {'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0} }; 
+  }).filter(function(a){ return a.nip; });
+
+  // Ambil Data Riwayat Cuti
+  var sCuti = ss.getSheetByName("Riwayat_Cuti").getDataRange().getValues().slice(1);
+  var dbCuti = sCuti.map(function(r) { 
+    return { id: r[0], nip: r[1], nama: r[2], jenis: r[3], tglMulai: r[4], tglAkhir: r[5], durasi: r[6], satuan: r[7], status: r[8], tglAju: r[9] }; 
+  }).filter(function(c){ return c.id; });
+
+  return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti };
+}
+
+// ---------------------------------------------------------
+// FUNGSI SIMPAN & UPDATE DATA KE SPREADSHEET
+// ---------------------------------------------------------
+function simpanAkun(id, nip, nama, username, password, role, isEdit) {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Akun_Admin");
+  if (isEdit) {
+    var data = sheet.getDataRange().getValues();
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][5] == id) { // Kolom ke-6 adalah ID (Index 5)
+        sheet.getRange(i + 1, 1, 1, 6).setValues([[nip, nama, username, password, role, id]]);
+        return "Edited";
+      }
+    }
+  }
+  sheet.appendRow([nip, nama, username, password, role, id]);
+  return "Saved";
+}
+
+function simpanASN(nip, nama, status, jabatan, sekolah) {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
+  var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
+  sheet.appendRow([nip, nama, status, jabatan, sekolah, cutiStr]);
+  return "Saved";
+}
+
+function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, updatedCutiDiambilStr) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheetCuti = ss.getSheetByName("Riwayat_Cuti");
+  sheetCuti.appendRow([id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju]);
+  
+  // Potong kuota di tabel Data ASN
+  var sheetASN = ss.getSheetByName("Data_ASN");
+  var dataASN = sheetASN.getDataRange().getValues();
+  for (var i = 1; i < dataASN.length; i++) {
+    if (dataASN[i][0] == nip) {
+      sheetASN.getRange(i + 1, 6).setValue(updatedCutiDiambilStr);
+      break;
+    }
+  }
+  return "Saved";
+}
+
+function updateStatusCuti(id, statusTujuan, nip, updatedCutiDiambilStr) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheetCuti = ss.getSheetByName("Riwayat_Cuti");
+  var dataCuti = sheetCuti.getDataRange().getValues();
+  for (var i = 1; i < dataCuti.length; i++) {
+    if (dataCuti[i][0] == id) {
+      sheetCuti.getRange(i + 1, 9).setValue(statusTujuan);
+      break;
+    }
+  }
+  
+  // Kembalikan kuota jika ditolak/dibatalkan
+  var sheetASN = ss.getSheetByName("Data_ASN");
+  var dataASN = sheetASN.getDataRange().getValues();
+  for (var j = 1; j < dataASN.length; j++) {
+    if (dataASN[j][0] == nip) {
+      sheetASN.getRange(j + 1, 6).setValue(updatedCutiDiambilStr);
+      break;
+    }
+  }
+  return "Updated";
+}
+
+// Fitur Unggah Excel Massal
+function uploadASNBulk(dataArray) {
+  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
+  var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
+  for(var i=0; i<dataArray.length; i++){
+     var row = dataArray[i];
+     var nip = row['NIP'] || row['NIP / NI PPPK'] || row['nip'] || '-';
+     var nama = row['Nama'] || row['Nama Lengkap'] || row['nama'] || '-';
+     var status = row['Status'] || row['status'] || 'PNS';
+     var jabatan = row['Jabatan'] || row['jabatan'] || '-';
+     var sekolah = row['Sekolah'] || row['sekolah'] || '-';
+     
+     sheet.appendRow([nip, nama, status, jabatan, sekolah, cutiStr]);
+  }
+  return "Bulk Saved";
 }
