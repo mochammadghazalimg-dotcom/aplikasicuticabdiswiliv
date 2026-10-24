@@ -792,6 +792,40 @@
             });
         }
 
+        function showDetailCuti(id) {
+            const cuti = dbCuti.find(c => c.id == id);
+            if(cuti) {
+                document.getElementById('det-id').innerText = cuti.id;
+                document.getElementById('det-tglAju').innerText = cuti.tglAju;
+                document.getElementById('det-nama').innerText = cuti.nama;
+                document.getElementById('det-nip').innerText = cuti.nip;
+                document.getElementById('det-jenis').innerText = 'Cuti ' + cuti.jenis;
+                document.getElementById('det-durasi').innerText = cuti.durasi;
+                document.getElementById('det-satuan').innerText = cuti.satuan;
+                document.getElementById('det-tglMulai').innerText = cuti.tglMulai;
+                document.getElementById('det-tglAkhir').innerText = cuti.tglAkhir;
+                // Jika alasan tidak ada karena data lama, tampilkan '-'
+                document.getElementById('det-alasan').innerText = cuti.alasan || '-'; 
+                
+                const statEl = document.getElementById('det-status');
+                statEl.innerText = cuti.status;
+                statEl.className = cuti.status === 'Disetujui' ? 'col-span-2 font-bold text-green-600' : (cuti.status === 'Ditolak' ? 'col-span-2 font-bold text-red-600' : 'col-span-2 font-bold text-amber-600');
+
+                // Tampilkan Modal
+                document.getElementById('modal-detail-cuti').classList.remove('hidden');
+                document.getElementById('modal-overlay').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('modal-detail-cuti-content').classList.remove('scale-95', 'opacity-0');
+                    document.getElementById('modal-detail-cuti-content').classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+        }
+
+        function cetakPDF() {
+            // Memanggil fungsi bawaan browser untuk cetak halaman/PDF
+            window.print();
+        }
+        
         function editASN(nip) {
             const asn = dbASN.find(a => a.nip == nip);
             if(asn) {
