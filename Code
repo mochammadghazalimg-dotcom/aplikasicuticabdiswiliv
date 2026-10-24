@@ -161,3 +161,120 @@ function uploadASNBulk(dataArray) {
   }
   return "Bulk Saved";
 }
+// ---------------------------------------------------------
+// FUNGSI EXPORT RIWAYAT CUTI KE EXCEL TERFORMAT
+// ---------------------------------------------------------
+function exportRiwayatExcel(currentUser) {
+  // Buat spreadsheet sementara di Google Drive
+  var ss = SpreadsheetApp.create("Temp_Riwayat_Cuti");
+  var sheet = ss.getActiveSheet();
+  sheet.setName("Riwayat Cuti");
+  
+  // Ambil data riwayat cuti terbaru
+  var dbCuti = getDB().dbCuti;
+  
+  // 1. Judul Header Laporan
+  sheet.getRange("A1:H1").merge().setValue("REKAPITULASI RIWAYAT CUTI ASN").setFontWeight("bold").setFontSize(14).setHorizontalAlignment("center");
+  sheet.getRange("A2:H2").merge().setValue("CABANG DINAS PENDIDIKAN WILAYAH IV").setFontWeight("bold").setFontSize(12).setHorizontalAlignment("center");
+  sheet.getRange("A3:H3").merge().setValue("PEMERINTAH PROVINSI SULAWESI SELATAN").setFontSize(10).setHorizontalAlignment("center");
+  
+  // 2. Header Tabel (Baris ke-5)
+  var headers = ["No", "Tgl Pengajuan", "NIP / NI PPPK", "Nama Pegawai", "Jenis Cuti", "Durasi", "Status", "Alasan Cuti"];
+  sheet.getRange(5, 1, 1, headers.length)
+       .setValues([headers])
+       .setFontWeight("bold")
+       .setBackground("#1e3a8a")
+       .setFontColor("#ffffff")
+       .setHorizontalAlignment("center")
+       .setVerticalAlignment("middle");
+  sheet.setRowHeight(5, 28);
+  
+  // 3. Mengisi Data Tabel
+  var rows = [];
+  for (var i = 0; i < dbCuti.length; i++) {
+    var c = dbCuti[i];
+    rows.push([
+      i + 1,
+      c.tglAju,
+      "'" + c.nip, // Prefix petik satu agar NIP dibaca sebagai teks utuh
+      c.nama,
+      c.jenis,
+      c.durasi + " " + c.satuan,
+      c.status,
+      c.alasan || '-'
+    ]);
+  }
+  
+  if (rows.length > 0) {
+    sheet.getRange(6, 1, rows.length, headers.length).setValues(rows);
+    
+    // Beri garis/border pada seluruh tabel
+    var dataRange = sheet.getRange(5, 1, rows.length + 1, headers.length);
+    dataRange.setBorder(true, true, true, true, true, true, "#000000", SpreadsheetApp.BorderStyle.SOLID);
+    
+    // Peratur rata posisi teks
+    sheet.getRange(6, 1, rows.length, 1).setHorizontalAlignment("center"); // No
+    sheet.getRange(6, 2, rows.length, 1).setHorizontalAlignment("center"); // Tgl Pengajuan
+    sheet.getRange(6, 3, rows.length, 1).setHorizontalAlignment("center"); // NIP
+    sheet.getRange(6, 5, rows.length, 1).setHorizontalAlignment("center"); // Jenis Cuti
+    sheet.getRange(6, 6, rows.length, 1).setHorizontalAlignment("center"); // Durasi
+    sheet.getRange(6, 7, rows.length, 1).setHorizontalAlignment("center"); // Status
+    sheet.getRange(6, 8, rows.length, 1).setHorizontalAlignment("left");   // Alasan
+  }
+  
+  // Pengaturan Lebar Kolom
+  sheet.setColumnWidth(1, 50);  // No
+  sheet.setColumnWidth(2, 130); // Tgl Pengajuan
+  sheet.setColumnWidth(3, 190); // NIP
+  sheet.setColumnWidth(4, 230); // Nama
+  sheet.setColumnWidth(5, 140); // Jenis
+  sheet.setColumnWidth(6, 100); // Durasi
+  sheet.setColumnWidth(7, 120); // Status
+  sheet.setColumnWidth(8, 280); // Alasan
+  
+  // 4. Format Tanggal & Blok Tanda Tangan
+  var lastRow = 5 + (rows.length > 0 ? rows.length : 1);
+  var sigStartRow = lastRow + 3;
+  
+  var bulanIndo = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  var today = new Date();
+  var tglStr = "Wajo, " + today.getDate() + " " + bulanIndo[today.getMonth()] + " " + today.getFullYear();
+  
+  // Baris Tanggal (Di sebelah kanan)
+  sheet.getRange(sigStartRow, 6, 1, 3).merge().setValue(tglStr).setHorizontalAlignment("center");
+  
+  // Jabatan Penandatangan
+  sheet.getRange(sigStartRow + 1, 1, 1, 4).merge().setValue("Mengetahui,\nKepala Cabang Dinas Pendidikan Wil IV").setHorizontalAlignment("center");
+  sheet.getRange(sigStartRow + 1, 6, 1, 3).merge().setValue("Pengelola Cuti,").setHorizontalAlignment("center");
+  
+  // Baris Nama & NIP (Memberikan ruang 4 baris untuk tanda tangan)
+  var nameRow = sigStartRow + 6;
+  
+  // Tanda Tangan Kiri (Kepala Cabang Dinas)
+  sheet.getRange(nameRow, 1, 1, 4).merge().setValue("Dr. SETTARAMING, S.Pd., M.Si").setFontWeight("bold").setFontLine("underline").setHorizontalAlignment("center");
+  sheet.getRange(nameRow + 1, 1, 1, 4).merge().setValue("NIP. 197204031998011001").setHorizontalAlignment("center");
+  
+  // Tanda Tangan Kanan (Admin / Superadmin Aktif)
+  var adminNama = currentUser ? currentUser.nama : "Admin Sistem";
+  var adminNip = (currentUser && currentUser.nip && currentUser.nip !== '-') ? "NIP. " + currentUser.nip : "NIP. -";
+  
+  sheet.getRange(nameRow, 6, 1, 3).merge().setValue(adminNama).setFontWeight("bold").setFontLine("underline").setHorizontalAlignment("center");
+  sheet.getRange(nameRow + 1, 6, 1, 3).merge().setValue(adminNip).setHorizontalAlignment("center");
+  
+  SpreadsheetApp.flush();
+  
+  // 5. Konversi Spreadsheet ke File XLSX Base64 untuk Diunduh
+  var fileId = ss.getId();
+  var file = DriveApp.getFileById(fileId);
+  var blob = file.getBlob().getAs("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+  var bytes = blob.getBytes();
+  var base64 = Utilities.base64Encode(bytes);
+  
+  // Hapus file temporary di Drive
+  DriveApp.getFileById(fileId).setTrashed(true);
+  
+  return {
+    filename: "Riwayat_Cuti_Cabdin_Wil_IV_" + today.getFullYear() + "_" + (today.getMonth() + 1) + "_" + today.getDate() + ".xlsx",
+    base64: base64
+  };
+}
