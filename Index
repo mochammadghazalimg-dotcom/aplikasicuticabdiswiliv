@@ -928,12 +928,11 @@
 
         function handleTambahASN(e) {
             e.preventDefault();
-            const nip = document.getElementById('new-nip').value;
-            
-            // CEK DUPLIKAT MANUAL
-            const isDuplicate = dbASN.some(a => a.nip == nip);
+            const nip = document.getElementById('new-nip').value.trim();
             const isEditMode = document.getElementById('btn-submit-asn').innerText === "Update Data";
             
+            // CEK DUPLIKAT DI FRONTEND
+            const isDuplicate = dbASN.some(a => a.nip == nip);
             if (isDuplicate && !isEditMode) {
                 showMessage('Peringatan', 'DATA ASN SUDAH TERSEDIA CEK DATA PEGAWAI TERLEBIH DAHULU SEBELUM MENAMBAH', 'warning');
                 return;
@@ -946,10 +945,21 @@
 
             document.getElementById('btn-submit-asn').innerText = "Menyimpan...";
 
-            google.script.run.withSuccessHandler(function() {
+            google.script.run.withSuccessHandler(function(res) {
+                if (res === "Duplicate") {
+                    showMessage('Peringatan', 'DATA ASN SUDAH TERSEDIA CEK DATA PEGAWAI TERLEBIH DAHULU SEBELUM MENAMBAH', 'warning');
+                    document.getElementById('btn-submit-asn').innerText = isEditMode ? "Update Data" : "Simpan Data";
+                    return;
+                }
+
                 if (isEditMode) {
                     const idx = dbASN.findIndex(a => a.nip == nip);
-                    if(idx > -1) { dbASN[idx].nama = nama; dbASN[idx].status = status; dbASN[idx].jabatan = jabatan; dbASN[idx].sekolah = sekolah; }
+                    if(idx > -1) { 
+                        dbASN[idx].nama = nama; 
+                        dbASN[idx].status = status; 
+                        dbASN[idx].jabatan = jabatan; 
+                        dbASN[idx].sekolah = sekolah; 
+                    }
                 } else {
                     dbASN.push({ nip, nama, status, jabatan, sekolah, cutiDiambil: { 'Tahunan': 0, 'Besar': 0, 'Sakit': 0, 'Melahirkan': 0, 'Alasan Penting': 0, 'CLTN': 0 } });
                 }
@@ -963,7 +973,7 @@
                 document.getElementById('btn-submit-asn').innerText = "Simpan Data";
                 showMessage('Berhasil', `Data pegawai ${nama} berhasil disimpan.`, 'success');
                 if(!document.getElementById('view-data-asn').classList.contains('hidden')) loadDataASN();
-            }).simpanASN(nip, nama, status, jabatan, sekolah); // Catatan: Jika ingin edit tersimpan di excel, pastikan fungsi simpanASN di Code.gs dimodifikasi menerima parameter edit.
+            }).simpanASN(nip, nama, status, jabatan, sekolah, isEditMode); // MENGIRIM PARAMETER isEditMode
         }
 
         function handlePengajuanCuti(e) {
