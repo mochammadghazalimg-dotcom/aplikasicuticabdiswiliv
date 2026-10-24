@@ -601,7 +601,12 @@
             document.getElementById('btn-login').innerHTML = 'Menghubungkan Server... <i class="fas fa-spinner fa-spin"></i>';
             document.getElementById('btn-login').disabled = true;
             
-            google.script.run.withSuccessHandler(function(data) {
+            google.script.run
+            .withFailureHandler(function(error) {
+                document.getElementById('btn-login').innerHTML = 'Gagal Terhubung!';
+                alert('Pesan Error: ' + error.message);
+            })
+            .withSuccessHandler(function(data) {
                 // Jika sheet akun admin kosong, buat default super admin
                 if(data.dbUsers.length > 0) {
                      dbUsers = data.dbUsers;
