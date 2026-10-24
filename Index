@@ -346,7 +346,11 @@
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                 <input type="text" id="search-riwayat" onkeyup="loadRiwayat()" placeholder="Cari NIP/Nama ASN..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-72">
                             </div>
+                            <button onclick="downloadExcelRiwayat()" id="btn-export-excel" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
+                                <i class="fas fa-file-excel"></i> Unduh Excel
+                            </button>
                         </div>
+                    </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -577,6 +581,34 @@
         </div>
     </div>
 
+    function downloadExcelRiwayat() {
+    const btn = document.getElementById('btn-export-excel');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    btn.disabled = true;
+
+    google.script.run
+    .withFailureHandler(function(err) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        showMessage('Gagal Export', 'Terjadi kesalahan saat mengunduh: ' + err.message, 'error');
+    })
+    .withSuccessHandler(function(res) {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        // Proses Trigger Download File XLSX
+        const a = document.createElement('a');
+        a.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + res.base64;
+        a.download = res.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        showMessage('Berhasil', 'File Excel Riwayat Cuti berhasil diunduh.', 'success');
+    })
+    .exportRiwayatExcel(currentUser);
+}
     <!-- Javascript Logic -->
     <script>
         // Array Kosong (Akan diisi otomatis dari Spreadsheet)
