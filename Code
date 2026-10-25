@@ -1,14 +1,13 @@
-// Ganti dengan ID Spreadsheet Anda (sudah saya sesuaikan)
+// Ganti dengan ID Spreadsheet Anda
 const SHEET_ID = '1K4Qa62tNBK7yHU32g43RoeANaV8sqXa_5LcGTBxYQJw';
 
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
-    .setTitle('SIM CUTI ASN - Cabdin Wil IV')
+    .setTitle('E-TARA CUTI - Cabdin Wil IV')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-// Fungsi untuk memastikan sheet dan header tabel ada
 function initSheet(sheetName, headers) {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName(sheetName);
@@ -19,34 +18,25 @@ function initSheet(sheetName, headers) {
   return sheet;
 }
 
-// ---------------------------------------------------------
-// FUNGSI LOAD DATA (Dipanggil saat web pertama kali dibuka)
-// ---------------------------------------------------------
 function getDB() {
-  // Pastikan tabel siap
   initSheet("Akun_Admin", ["NIP", "Nama", "Username", "Password", "Role", "ID"]);
   initSheet("Data_ASN", ["NIP", "Nama", "Status", "Jabatan", "Sekolah", "CutiDiambil"]);
-  // UPDATE: Penambahan kolom "Alasan" di header Riwayat_Cuti
   initSheet("Riwayat_Cuti", ["ID", "NIP", "Nama", "Jenis", "TglMulai", "TglAkhir", "Durasi", "Satuan", "Status", "TglAju", "Alasan"]);
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
   
-  // Ambil Data Akun
   var sAkun = ss.getSheetByName("Akun_Admin").getDataRange().getValues().slice(1);
   var dbUsers = sAkun.map(function(r) { 
     return { nip: r[0], nama: r[1], username: r[2], password: r[3], role: r[4] ? r[4] : 'Admin', id: r[5] ? r[5] : Date.now() + Math.floor(Math.random()*1000) }; 
   }).filter(function(u){ return u.username; });
 
-  // Ambil Data ASN
   var sASN = ss.getSheetByName("Data_ASN").getDataRange().getValues().slice(1);
   var dbASN = sASN.map(function(r) { 
     return { nip: r[0], nama: r[1], status: r[2], jabatan: r[3], sekolah: r[4], cutiDiambil: r[5] ? JSON.parse(r[5]) : {'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0} }; 
   }).filter(function(a){ return a.nip; });
 
-  // Ambil Data Riwayat Cuti
   var sCuti = ss.getSheetByName("Riwayat_Cuti").getDataRange().getValues().slice(1);
   var dbCuti = sCuti.map(function(r) { 
-    // Konversi objek Date menjadi String agar tidak error saat dikirim ke HTML
     var tglM = (r[4] instanceof Date) ? r[4].toISOString().split('T')[0] : r[4];
     var tglA = (r[5] instanceof Date) ? r[5].toISOString().split('T')[0] : r[5];
     var tglAju = (r[9] instanceof Date) ? r[9].toISOString().split('T')[0] : r[9];
@@ -57,15 +47,12 @@ function getDB() {
   return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti };
 }
 
-// ---------------------------------------------------------
-// FUNGSI SIMPAN & UPDATE DATA KE SPREADSHEET
-// ---------------------------------------------------------
 function simpanAkun(id, nip, nama, username, password, role, isEdit) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Akun_Admin");
   if (isEdit) {
     var data = sheet.getDataRange().getValues();
     for (var i = 1; i < data.length; i++) {
-      if (data[i][5] == id) { // Kolom ke-6 adalah ID (Index 5)
+      if (data[i][5] == id) {
         sheet.getRange(i + 1, 1, 1, 6).setValues([[nip, nama, username, password, role, id]]);
         return "Edited";
       }
@@ -75,13 +62,11 @@ function simpanAkun(id, nip, nama, username, password, role, isEdit) {
   return "Saved";
 }
 
-// SIMPAN & UPDATE DATA ASN KE SPREADSHEET (DENGAN PROTEKSI DUPLIKAT)
 function simpanASN(nip, nama, status, jabatan, sekolah, isEdit) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
   var data = sheet.getDataRange().getValues();
 
   if (isEdit) {
-    // 1. JIKA EDIT: Cari NIP yang cocok lalu TIMPA/UPDATE datanya (TIDAK MENAMBAH BARIS BARU)
     for (var i = 1; i < data.length; i++) {
       if (data[i][0] == nip) {
         sheet.getRange(i + 1, 2, 1, 4).setValues([[nama, status, jabatan, sekolah]]);
@@ -89,28 +74,23 @@ function simpanASN(nip, nama, status, jabatan, sekolah, isEdit) {
       }
     }
   } else {
-    // 2. JIKA TAMBAH MANUAL: Cek apakah NIP sudah ada di spreadsheet
     for (var j = 1; j < data.length; j++) {
       if (data[j][0] == nip) {
-        return "Duplicate"; // TERTOLAK KARENA DUPLIKAT
+        return "Duplicate";
       }
     }
     
-    // Jika NIP belum ada, tambahkan baris baru
     var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
     sheet.appendRow([nip, nama, status, jabatan, sekolah, cutiStr]);
     return "Saved";
   }
 }
 
-// UPDATE: Penambahan parameter "alasan" di dalam fungsi simpanCuti
 function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan, updatedCutiDiambilStr) {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheetCuti = ss.getSheetByName("Riwayat_Cuti");
-  // UPDATE: Menyisipkan "alasan" ke dalam array yang disimpan ke sheet
   sheetCuti.appendRow([id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan]);
   
-  // Potong kuota di tabel Data ASN
   var sheetASN = ss.getSheetByName("Data_ASN");
   var dataASN = sheetASN.getDataRange().getValues();
   for (var i = 1; i < dataASN.length; i++) {
@@ -133,7 +113,6 @@ function updateStatusCuti(id, statusTujuan, nip, updatedCutiDiambilStr) {
     }
   }
   
-  // Kembalikan kuota jika ditolak/dibatalkan
   var sheetASN = ss.getSheetByName("Data_ASN");
   var dataASN = sheetASN.getDataRange().getValues();
   for (var j = 1; j < dataASN.length; j++) {
@@ -145,7 +124,6 @@ function updateStatusCuti(id, statusTujuan, nip, updatedCutiDiambilStr) {
   return "Updated";
 }
 
-// Fitur Unggah Excel Massal
 function uploadASNBulk(dataArray) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
   var cutiStr = JSON.stringify({'Tahunan':0,'Besar':0,'Sakit':0,'Melahirkan':0,'Alasan Penting':0,'CLTN':0});
@@ -161,16 +139,17 @@ function uploadASNBulk(dataArray) {
   }
   return "Bulk Saved";
 }
+
 // ---------------------------------------------------------
 // FUNGSI EXPORT RIWAYAT CUTI KE EXCEL TERFORMAT
 // ---------------------------------------------------------
 function exportRiwayatExcel(currentUser) {
-  // Buat spreadsheet sementara di Google Drive
+  // Buat file spreadsheet sementara di Google Drive
   var ss = SpreadsheetApp.create("Temp_Riwayat_Cuti");
   var sheet = ss.getActiveSheet();
   sheet.setName("Riwayat Cuti");
   
-  // Ambil data riwayat cuti terbaru
+  // Ambil seluruh data riwayat cuti dari database
   var dbCuti = getDB().dbCuti;
   
   // 1. Judul Header Laporan
@@ -189,14 +168,14 @@ function exportRiwayatExcel(currentUser) {
        .setVerticalAlignment("middle");
   sheet.setRowHeight(5, 28);
   
-  // 3. Mengisi Data Tabel
+  // 3. Mengisi Seluruh Data
   var rows = [];
   for (var i = 0; i < dbCuti.length; i++) {
     var c = dbCuti[i];
     rows.push([
       i + 1,
       c.tglAju,
-      "'" + c.nip, // Prefix petik satu agar NIP dibaca sebagai teks utuh
+      "'" + c.nip, // Ditambah petik tunggal agar NIP tidak terpotong
       c.nama,
       c.jenis,
       c.durasi + " " + c.satuan,
@@ -240,14 +219,13 @@ function exportRiwayatExcel(currentUser) {
   var today = new Date();
   var tglStr = "Wajo, " + today.getDate() + " " + bulanIndo[today.getMonth()] + " " + today.getFullYear();
   
-  // Baris Tanggal (Di sebelah kanan)
+  // Baris Tanggal (Sebelah Kanan)
   sheet.getRange(sigStartRow, 6, 1, 3).merge().setValue(tglStr).setHorizontalAlignment("center");
   
   // Jabatan Penandatangan
   sheet.getRange(sigStartRow + 1, 1, 1, 4).merge().setValue("Mengetahui,\nKepala Cabang Dinas Pendidikan Wil IV").setHorizontalAlignment("center");
   sheet.getRange(sigStartRow + 1, 6, 1, 3).merge().setValue("Pengelola Cuti,").setHorizontalAlignment("center");
   
-  // Baris Nama & NIP (Memberikan ruang 4 baris untuk tanda tangan)
   var nameRow = sigStartRow + 6;
   
   // Tanda Tangan Kiri (Kepala Cabang Dinas)
@@ -263,15 +241,21 @@ function exportRiwayatExcel(currentUser) {
   
   SpreadsheetApp.flush();
   
-  // 5. Konversi Spreadsheet ke File XLSX Base64 untuk Diunduh
-  var fileId = ss.getId();
-  var file = DriveApp.getFileById(fileId);
-  var blob = file.getBlob().getAs("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  var bytes = blob.getBytes();
-  var base64 = Utilities.base64Encode(bytes);
+  // 5. Unduh sebagai file Excel (.xlsx) melalui endpoint resmi Google
+  var id = ss.getId();
+  var url = "https://docs.google.com/spreadsheets/d/" + id + "/export?format=xlsx";
+  var params = {
+    method: "get",
+    headers: { "Authorization": "Bearer " + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
+  };
+  
+  var response = UrlFetchApp.fetch(url, params);
+  var blob = response.getBlob();
+  var base64 = Utilities.base64Encode(blob.getBytes());
   
   // Hapus file temporary di Drive
-  DriveApp.getFileById(fileId).setTrashed(true);
+  DriveApp.getFileById(id).setTrashed(true);
   
   return {
     filename: "Riwayat_Cuti_Cabdin_Wil_IV_" + today.getFullYear() + "_" + (today.getMonth() + 1) + "_" + today.getDate() + ".xlsx",
