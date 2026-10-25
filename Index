@@ -3,30 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIM Cuti - Cabdin Pendidikan Wil IV</title>
-    <!-- Tailwind CSS for Modern Styling -->
+    <title>E-TARA CUTI WIL IV</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Library Pembaca Excel (XLSX) -->
+    <!-- XLSX Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        edu: {
-                            blue: '#1e3a8a',
-                            lightBlue: '#3b82f6',
-                            gold: '#f59e0b',
-                            bg: '#f8fafc'
-                        }
+                        edu: { blue: '#1e3a8a', lightBlue: '#3b82f6', gold: '#f59e0b', bg: '#f8fafc' }
                     }
                 }
             }
@@ -54,32 +47,29 @@
     <!-- SCREEN LOGIN -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-edu-blue bg-opacity-70 bg-blend-multiply transition-opacity duration-500" style="background-image: url('https://i.imgur.com/yxPiSE9.jpeg'); background-size: cover; background-position: center; background-repeat: no-repeat;">
         <div class="bg-white bg-opacity-95 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.4)] w-full max-w-md text-center transform transition-all fade-in border border-white relative overflow-hidden">
-            
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-edu-gold via-yellow-400 to-edu-blue"></div>
-
             <div class="w-24 h-24 mx-auto bg-white rounded-2xl flex items-center justify-center shadow-md mb-6 border border-gray-100 p-2 relative">
                 <img src="https://i.imgur.com/N8da60H.png" alt="Logo Pemprov Sulsel" class="w-full h-full object-contain drop-shadow-sm z-10 relative" onerror="this.style.display='none'; document.getElementById('logo-fallback').style.display='block';">
                 <i id="logo-fallback" class="fas fa-university text-5xl text-edu-blue absolute" style="display: none;"></i>
             </div>
             
-            <h2 class="text-3xl font-extrabold text-gray-800 mb-2 tracking-tight">SIM CUTI ASN</h2>
-            <p class="text-sm font-bold text-edu-blue mb-1 uppercase tracking-wide">Cabang Dinas Pendidikan Wil IV</p>
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-2 tracking-tight">E-TARA CUTI ASN</h2>
+            <p class="text-sm font-bold text-edu-blue mb-1 uppercase tracking-wide">Cabang Dinas Pendidikan Wil. IV</p>
             <p class="text-xs text-gray-500 mb-8 font-medium">Pemerintah Provinsi Sulawesi Selatan</p>
             
             <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5 relative z-10">
                 <div class="relative">
                     <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="login-user" required placeholder="Username (superadmin / admin)" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-edu-blue focus:border-transparent transition text-sm font-medium">
+                    <input type="text" id="login-user" required placeholder="Username" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-edu-blue focus:border-transparent transition text-sm font-medium">
                 </div>
                 <div class="relative">
                     <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="password" id="login-pass" required placeholder="Password (123)" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-edu-blue focus:border-transparent transition text-sm font-medium">
+                    <input type="password" id="login-pass" required placeholder="Password" class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-edu-blue focus:border-transparent transition text-sm font-medium">
                 </div>
                 <button type="submit" id="btn-login" class="w-full py-3.5 bg-edu-blue text-white font-bold rounded-xl hover:bg-blue-800 transition shadow-lg hover:shadow-xl mt-2 flex items-center justify-center gap-2">
                     Masuk Sistem <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
-            
             <div class="mt-8 pt-4 border-t border-gray-200 border-opacity-70">
                 <p class="text-xs text-gray-500 font-medium">© 2026 Cabang Dinas Pendidikan Wilayah IV</p>
             </div>
@@ -88,16 +78,21 @@
 
     <!-- MAIN APP WRAPPER -->
     <div id="app-wrapper" class="flex w-full h-full hidden">
-        
-        <!-- SIDEBAR NAVIGATION -->
         <aside id="sidebar" class="w-64 bg-edu-blue text-white flex flex-col shadow-xl z-20 hidden md:flex transition-all duration-300 relative">
-            <div class="p-6 flex items-center gap-4 border-b border-blue-800">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-inner p-1">
-                    <img src="https://i.imgur.com/N8da60H.png" alt="Logo" class="w-full h-full object-contain">
+            <div class="p-5 flex flex-col gap-3 border-b border-blue-800">
+                <!-- Baris Logo dan Judul Utama -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-inner p-1 shrink-0">
+                          <img src="https://i.imgur.com/N8da60H.png" alt="Logo" class="w-full h-full object-contain">
+                    </div>
+                    <div>
+                        <h1 class="text-base font-bold leading-tight tracking-wide text-white">E-TARA CUTI</h1>
+                        <p class="text-[11px] text-slate-250 font-medium">Elektronik Tertib Administrasi Cuti</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-lg font-bold leading-tight tracking-wide text-white">SIM CUTI</h1>
-                    <p class="text-[10px] text-blue-300 font-semibold uppercase tracking-wider">Cabdin Wil IV</p>
+                <!-- Teks Instansi di Bawah (Selaras / Rata Tengah) -->
+                <div class="text-center pt-1 border-t border-blue-800/50">
+                    <p class="text-[11px] text-blue-200 font-semibold uppercase tracking-wider">Cabang Dinas Pendidikan Wil IV</p>
                 </div>
             </div>
             
@@ -114,8 +109,6 @@
                 <a href="#" onclick="navigate('riwayat')" class="nav-link block px-4 py-3 rounded-xl hover:bg-blue-800 hover:text-edu-gold transition-colors text-white font-medium" data-target="riwayat">
                     <i class="fas fa-history w-6 text-center"></i> Riwayat Cuti
                 </a>
-                
-                <!-- MENU MANAJEMEN AKUN KHUSUS SUPERADMIN -->
                 <a href="#" id="menu-manajemen-akun" onclick="navigate('manajemen-akun')" class="nav-link hidden px-4 py-3 rounded-xl hover:bg-blue-800 hover:text-edu-gold transition-colors text-white font-medium" data-target="manajemen-akun">
                     <i class="fas fa-user-shield w-6 text-center"></i> Manajemen Akun
                 </a>
@@ -132,7 +125,7 @@
                             <p class="text-[10px] font-bold text-edu-gold uppercase tracking-wider" id="active-user-role">Role</p>
                         </div>
                     </div>
-                    <button onclick="handleLogout()" class="text-blue-300 hover:text-red-400 transition ml-2" title="Keluar dari Sistem">
+                    <button onclick="handleLogout()" class="text-blue-300 hover:text-red-400 transition ml-2" title="Keluar">
                         <i class="fas fa-power-off text-lg"></i>
                     </button>
                 </div>
@@ -146,13 +139,12 @@
                 </button>
                 <h2 class="text-xl font-bold text-gray-800" id="page-title">Dashboard Utama</h2>
                 <div class="flex items-center gap-4 text-gray-500">
-                    <button class="hover:text-edu-blue transition" title="Notifikasi"><i class="fas fa-bell"></i></button>
-                    <button class="hover:text-edu-blue transition" title="Pengaturan"><i class="fas fa-cog"></i></button>
+                    <button class="hover:text-edu-blue transition"><i class="fas fa-bell"></i></button>
+                    <button class="hover:text-edu-blue transition"><i class="fas fa-cog"></i></button>
                 </div>
             </header>
 
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="main-content">
-                
                 <!-- DASHBOARD -->
                 <div id="view-dashboard" class="page-view fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -196,7 +188,7 @@
 
                     <div class="bg-blue-50 border-l-4 border-edu-blue rounded-r-xl p-5 mb-8">
                         <h4 class="font-bold text-edu-blue mb-2"><i class="fas fa-info-circle mr-2"></i>Sistem Penyesuaian Regulasi Aktif</h4>
-                        <p class="text-sm text-gray-700">Aplikasi ini secara otomatis menerapkan <strong>Peraturan BKN No. 7 Tahun 2021</strong> untuk perhitungan cuti PNS dan <strong>Peraturan BKN No. 7 Tahun 2022</strong> untuk PPPK. Cuti di luar ketentuan akan otomatis ditolak oleh sistem formulir.</p>
+                        <p class="text-sm text-gray-700">Aplikasi ini secara otomatis menerapkan <strong>Peraturan BKN No. 7 Tahun 2021</strong> untuk perhitungan cuti PNS dan <strong>Peraturan BKN No. 7 Tahun 2022</strong> untuk PPPK.</p>
                     </div>
 
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
@@ -212,8 +204,7 @@
                                         <th class="py-3 px-4 font-semibold">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="dashboard-recent-table" class="text-sm">
-                                </tbody>
+                                <tbody id="dashboard-recent-table" class="text-sm"></tbody>
                             </table>
                         </div>
                     </div>
@@ -227,12 +218,12 @@
                             <div class="flex gap-2 flex-wrap justify-end">
                                 <div class="relative">
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    <input type="text" id="search-asn" onkeyup="loadDataASN()" placeholder="Cari NIP/Nama..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue focus:border-transparent text-sm w-full sm:w-64">
+                                    <input type="text" id="search-asn" onkeyup="loadDataASN()" placeholder="Cari NIP/Nama..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-64">
                                 </div>
-                                <button onclick="downloadTemplate()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2" title="Download Template Excel">
+                                <button onclick="downloadTemplate()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
                                     <i class="fas fa-file-excel"></i> Template
                                 </button>
-                                <button onclick="document.getElementById('upload-template').click()" class="bg-gray-100 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition shadow-md text-sm font-medium flex items-center gap-2" title="Unggah Data dari Template">
+                                <button onclick="document.getElementById('upload-template').click()" class="bg-gray-100 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-200 transition shadow-md text-sm font-medium flex items-center gap-2">
                                     <i class="fas fa-upload"></i> Unggah
                                 </button>
                                 <input type="file" id="upload-template" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleUploadTemplate(event)">
@@ -253,8 +244,7 @@
                                         <th class="py-3 px-4 font-semibold text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="asn-table-body" class="text-sm text-gray-700">
-                                </tbody>
+                                <tbody id="asn-table-body" class="text-sm text-gray-700"></tbody>
                             </table>
                         </div>
                     </div>
@@ -290,8 +280,7 @@
 
                             <div id="kuota-info-container" class="mb-5 hidden bg-blue-50 p-4 rounded-lg border border-blue-100">
                                 <p class="text-sm font-bold text-edu-blue mb-2">Sisa Kuota Cuti (Berdasarkan Aturan BKN)</p>
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="kuota-grid">
-                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs" id="kuota-grid"></div>
                             </div>
 
                             <div class="mb-5">
@@ -299,7 +288,6 @@
                                 <select id="cuti-jenis" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue bg-white text-gray-700 disabled:bg-gray-100" disabled>
                                     <option value="">-- Pilih ASN Terlebih Dahulu --</option>
                                 </select>
-                                <p class="text-xs text-gray-500 mt-1 italic" id="cuti-aturan-hint">*Jenis cuti disesuaikan dengan status PNS/PPPK.</p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
@@ -320,7 +308,6 @@
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Berakhir</label>
                                     <input type="date" id="cuti-akhir" readonly class="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed">
-                                    <p class="text-xs text-gray-500 mt-1">*Tanggal berakhir dihitung otomatis dari sistem.</p>
                                 </div>
                             </div>
 
@@ -342,15 +329,17 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                             <h3 class="text-lg font-bold text-gray-800">Rekapitulasi & Riwayat Cuti</h3>
-                            <div class="relative w-full sm:w-auto">
-                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                <input type="text" id="search-riwayat" onkeyup="loadRiwayat()" placeholder="Cari NIP/Nama ASN..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-72">
+                            <div class="flex gap-2 flex-wrap justify-end w-full sm:w-auto">
+                                <div class="relative w-full sm:w-auto">
+                                    <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <input type="text" id="search-riwayat" onkeyup="loadRiwayat()" placeholder="Cari NIP/Nama ASN..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-72">
+                                </div>
+                                <!-- TOMBOL UNDUH EXCEL RIWAYAT -->
+                                <button onclick="downloadExcelRiwayat()" id="btn-export-excel" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
+                                    <i class="fas fa-file-excel"></i> Unduh Excel
+                                </button>
                             </div>
-                            <button onclick="downloadExcelRiwayat()" id="btn-export-excel" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
-                                <i class="fas fa-file-excel"></i> Unduh Excel
-                            </button>
                         </div>
-                    </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
@@ -363,25 +352,22 @@
                                         <th class="py-3 px-4 font-semibold text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="riwayat-table-body" class="text-sm text-gray-700">
-                                </tbody>
+                                <tbody id="riwayat-table-body" class="text-sm text-gray-700"></tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-                <!-- MANAJEMEN AKUN (HANYA BISA DIAKSES SUPERADMIN) -->
+                <!-- MANAJEMEN AKUN -->
                 <div id="view-manajemen-akun" class="page-view hidden fade-in">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                             <h3 class="text-lg font-bold text-gray-800">Manajemen Sistem Akun Admin</h3>
                             <div class="flex gap-2 flex-wrap justify-end">
-                                <!-- KOLOM PENCARIAN -->
                                 <div class="relative">
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                     <input type="text" id="search-akun" onkeyup="loadManajemenAkun()" placeholder="Cari NIP, Nama, atau User..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-64">
                                 </div>
-                                <!-- TOMBOL TAMBAH ADMIN -->
                                 <button onclick="showModalAkun()" class="bg-edu-blue text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition shadow-md text-sm font-medium flex items-center gap-2">
                                     <i class="fas fa-user-plus"></i> Tambah Akun Admin
                                 </button>
@@ -399,8 +385,7 @@
                                         <th class="py-3 px-4 font-semibold text-center">Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="akun-table-body" class="text-sm text-gray-700">
-                                </tbody>
+                                <tbody id="akun-table-body" class="text-sm text-gray-700"></tbody>
                             </table>
                         </div>
                     </div>
@@ -456,7 +441,7 @@
         </div>
     </div>
 
-    <!-- Modal Detail Riwayat Cuti (Popup) -->
+    <!-- Modal Detail Riwayat Cuti -->
     <div id="modal-detail-cuti" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-detail-cuti-content">
             <div class="bg-edu-blue text-white px-6 py-4 flex justify-between items-center print:hidden">
@@ -466,9 +451,7 @@
                 </button>
             </div>
             
-            <!-- Area yang akan dicetak -->
             <div id="area-cetak-pdf" class="p-8 bg-white text-gray-800 relative">
-                <!-- Header Cetak -->
                 <div class="text-center mb-6 border-b-2 border-gray-800 pb-4 hidden print:block">
                     <h2 class="text-xl font-bold uppercase">Formulir Permintaan dan Pemberian Cuti</h2>
                     <p class="text-sm font-semibold">Cabang Dinas Pendidikan Wilayah IV</p>
@@ -514,7 +497,6 @@
                 </div>
             </div>
 
-            <!-- Footer Buttons -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 print:hidden">
                 <button type="button" onclick="closeModal('modal-detail-cuti')" class="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 font-medium transition">Tutup</button>
                 <button type="button" onclick="cetakPDF()" class="px-5 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition shadow flex items-center gap-2">
@@ -524,7 +506,7 @@
         </div>
     </div>
 
-    <!-- Modal Form Tambah/Edit Akun (RESET PASSWORD DLL) -->
+    <!-- Modal Form Admin -->
     <div id="modal-akun" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="modal-akun-content">
             <div class="bg-edu-blue text-white px-6 py-4 flex justify-between items-center">
@@ -571,8 +553,7 @@
     <!-- Modal Message -->
     <div id="modal-message" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center transform scale-95 opacity-0 transition-all duration-300" id="modal-message-content">
-            <div id="msg-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4">
-            </div>
+            <div id="msg-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4"></div>
             <h3 id="msg-title" class="text-xl font-bold text-gray-800 mb-2">Title</h3>
             <p id="msg-desc" class="text-gray-600 text-sm mb-6">Description</p>
             <button onclick="closeModal('modal-message')" id="msg-btn" class="w-full px-4 py-2 rounded-xl text-white font-medium transition shadow-md">
@@ -581,37 +562,8 @@
         </div>
     </div>
 
-    function downloadExcelRiwayat() {
-    const btn = document.getElementById('btn-export-excel');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-    btn.disabled = true;
-
-    google.script.run
-    .withFailureHandler(function(err) {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-        showMessage('Gagal Export', 'Terjadi kesalahan saat mengunduh: ' + err.message, 'error');
-    })
-    .withSuccessHandler(function(res) {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-
-        // Proses Trigger Download File XLSX
-        const a = document.createElement('a');
-        a.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + res.base64;
-        a.download = res.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        showMessage('Berhasil', 'File Excel Riwayat Cuti berhasil diunduh.', 'success');
-    })
-    .exportRiwayatExcel(currentUser);
-}
     <!-- Javascript Logic -->
     <script>
-        // Array Kosong (Akan diisi otomatis dari Spreadsheet)
         let dbUsers = [];
         let dbASN = [];
         let dbCuti = [];
@@ -620,15 +572,14 @@
         const ATURAN_CUTI = {
             PNS: {
                 jenis: ['Tahunan', 'Besar', 'Sakit', 'Melahirkan', 'Alasan Penting', 'CLTN'],
-                max: { 'Tahunan': {val: 12, satuan: 'hari'}, 'Besar': {val: 3, satuan: 'bulan'}, 'Sakit': {val: 365, satuan: 'hari', note: 'Maks 1 tahun/kondisional'}, 'Melahirkan': {val: 3, satuan: 'bulan'}, 'Alasan Penting': {val: 1, satuan: 'bulan'}, 'CLTN': {val: 3, satuan: 'tahun'} }
+                max: { 'Tahunan': {val: 12, satuan: 'hari'}, 'Besar': {val: 3, satuan: 'bulan'}, 'Sakit': {val: 365, satuan: 'hari'}, 'Melahirkan': {val: 3, satuan: 'bulan'}, 'Alasan Penting': {val: 1, satuan: 'bulan'}, 'CLTN': {val: 3, satuan: 'tahun'} }
             },
             PPPK: {
                 jenis: ['Tahunan', 'Sakit', 'Melahirkan'],
-                max: { 'Tahunan': {val: 12, satuan: 'hari'}, 'Sakit': {val: 30, satuan: 'hari', note: 'Maks 1 bln dgn ket RS'}, 'Melahirkan': {val: 3, satuan: 'bulan'} }
+                max: { 'Tahunan': {val: 12, satuan: 'hari'}, 'Sakit': {val: 30, satuan: 'hari'}, 'Melahirkan': {val: 3, satuan: 'bulan'} }
             }
         };
 
-        // LOAD DATA SAAT WEB DIBUKA
         window.onload = () => {
             document.getElementById('btn-login').innerHTML = 'Menghubungkan Server... <i class="fas fa-spinner fa-spin"></i>';
             document.getElementById('btn-login').disabled = true;
@@ -639,7 +590,6 @@
                 alert('Pesan Error: ' + error.message);
             })
             .withSuccessHandler(function(data) {
-                // Jika sheet akun admin kosong, buat default super admin
                 if(data.dbUsers.length > 0) {
                      dbUsers = data.dbUsers;
                 } else {
@@ -656,16 +606,10 @@
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.toggle('hidden');
-            sidebar.classList.toggle('absolute');
-            sidebar.classList.toggle('inset-y-0');
-            sidebar.classList.toggle('left-0');
-            sidebar.classList.toggle('z-50');
         }
 
         function navigate(pageId) {
             document.querySelectorAll('.page-view').forEach(el => el.classList.add('hidden'));
-            
-            // Atur styling sidebar active link
             document.querySelectorAll('.nav-link').forEach(el => {
                 el.classList.remove('bg-blue-800', 'text-edu-gold');
                 el.classList.add('text-white');
@@ -679,10 +623,7 @@
             }
             
             const sidebar = document.getElementById('sidebar');
-            if (sidebar) {
-                sidebar.classList.add('hidden');
-                sidebar.classList.remove('absolute', 'inset-y-0', 'left-0', 'z-50');
-            }
+            if (sidebar) sidebar.classList.add('hidden');
             
             const titles = { 'dashboard': 'Dashboard Utama', 'data-asn': 'Manajemen Data ASN', 'pengajuan': 'Form Pengajuan Cuti', 'riwayat': 'Riwayat Pengajuan Cuti', 'manajemen-akun': 'Manajemen Sistem Akun Admin' };
             document.getElementById('page-title').innerText = titles[pageId];
@@ -732,10 +673,7 @@
             content.classList.add('scale-95', 'opacity-0');
             setTimeout(() => {
                 document.getElementById(modalId).classList.add('hidden');
-                if(modalId === 'modal-message' && !document.getElementById('modal-tambah-asn').classList.contains('hidden')) {
-                } else {
-                    document.getElementById('modal-overlay').classList.add('hidden');
-                }
+                document.getElementById('modal-overlay').classList.add('hidden');
             }, 200);
         }
 
@@ -788,7 +726,6 @@
                         <td class="py-3 px-4">${a.jabatan}</td>
                         <td class="py-3 px-4">${a.sekolah}</td>
                         <td class="py-3 px-4 text-center">
-                            <!-- Tombol aksi edit diaktifkan -->
                             <button onclick="editASN('${a.nip}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
                         </td>
                     </tr>
@@ -819,7 +756,6 @@
                 document.getElementById('asn-status-info').classList.add('hidden');
                 showMessage('Data Tidak Ditemukan', 'DATA ASN TIDAK TERSEDIA SILAHKAN INPUT DI MENU DATA ASN TERLEBIH DAHULU', 'error');
             } else {
-                // PENGECEKAN DATA TIDAK LENGKAP
                 if (!asn.nama || !asn.jabatan || !asn.sekolah || asn.jabatan.trim() === '-' || asn.sekolah.trim() === '-') {
                     document.getElementById('cuti-jenis').disabled = true;
                     document.getElementById('cuti-jenis').innerHTML = '<option value="">-- Data Tidak Lengkap --</option>';
@@ -883,18 +819,15 @@
                 if(keyword && !c.nama.toLowerCase().includes(keyword) && !c.nip.toString().includes(keyword)) return;
                 const statusColor = c.status === 'Disetujui' ? 'text-green-600 bg-green-50' : c.status === 'Ditolak' ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50';
                 
-                // Tambahkan tombol Lihat Detail untuk Admin/Superadmin
-                let aksiHtml = `<button onclick="showDetailCuti(${c.id})" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded mx-1" title="Lihat Detail Pengajuan"><i class="fas fa-eye"></i></button>`;
+                let aksiHtml = `<button onclick="showDetailCuti(${c.id})" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded mx-1" title="Lihat Detail"><i class="fas fa-eye"></i></button>`;
                 
-                // Jika superadmin, tambahkan tombol setuju/tolak
                 if (currentUser && currentUser.role.trim().toLowerCase() === 'superadmin') {
                      aksiHtml += `
-                        <button onclick="prosesCuti(${c.id}, 'Ditolak')" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded" title="Batalkan/Tolak Cuti"><i class="fas fa-times-circle"></i></button>
-                        <button onclick="prosesCuti(${c.id}, 'Disetujui')" class="text-green-500 hover:bg-green-50 px-2 py-1 rounded" title="Setujui Cuti"><i class="fas fa-check-circle"></i></button>
+                        <button onclick="prosesCuti(${c.id}, 'Ditolak')" class="text-red-500 hover:bg-red-50 px-2 py-1 rounded" title="Tolak"><i class="fas fa-times-circle"></i></button>
+                        <button onclick="prosesCuti(${c.id}, 'Disetujui')" class="text-green-500 hover:bg-green-50 px-2 py-1 rounded" title="Setujui"><i class="fas fa-check-circle"></i></button>
                      `;
                 }
                 
-                // Klik Nama akan langsung membuka detail
                 tbody.innerHTML += `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                         <td class="py-3 px-4 whitespace-nowrap">${c.tglAju}</td>
@@ -920,14 +853,12 @@
                 document.getElementById('det-satuan').innerText = cuti.satuan;
                 document.getElementById('det-tglMulai').innerText = cuti.tglMulai;
                 document.getElementById('det-tglAkhir').innerText = cuti.tglAkhir;
-                // Jika alasan tidak ada karena data lama, tampilkan '-'
                 document.getElementById('det-alasan').innerText = cuti.alasan || '-'; 
                 
                 const statEl = document.getElementById('det-status');
                 statEl.innerText = cuti.status;
                 statEl.className = cuti.status === 'Disetujui' ? 'col-span-2 font-bold text-green-600' : (cuti.status === 'Ditolak' ? 'col-span-2 font-bold text-red-600' : 'col-span-2 font-bold text-amber-600');
 
-                // Tampilkan Modal
                 document.getElementById('modal-detail-cuti').classList.remove('hidden');
                 document.getElementById('modal-overlay').classList.remove('hidden');
                 setTimeout(() => {
@@ -938,16 +869,14 @@
         }
 
         function cetakPDF() {
-            // Memanggil fungsi bawaan browser untuk cetak halaman/PDF
             window.print();
         }
 
         function editASN(nip) {
             const asn = dbASN.find(a => a.nip == nip);
             if(asn) {
-                // Membuka modal tambah/edit dan mengisi data (termasuk untuk edit golongan kedepannya)
                 document.getElementById('new-nip').value = asn.nip;
-                document.getElementById('new-nip').disabled = true; // Kunci NIP agar tidak diubah
+                document.getElementById('new-nip').disabled = true;
                 document.getElementById('new-nama').value = asn.nama;
                 document.getElementById('new-status').value = asn.status;
                 document.getElementById('new-jabatan').value = asn.jabatan;
@@ -963,7 +892,6 @@
             const nip = document.getElementById('new-nip').value.trim();
             const isEditMode = document.getElementById('btn-submit-asn').innerText === "Update Data";
             
-            // CEK DUPLIKAT DI FRONTEND
             const isDuplicate = dbASN.some(a => a.nip == nip);
             if (isDuplicate && !isEditMode) {
                 showMessage('Peringatan', 'DATA ASN SUDAH TERSEDIA CEK DATA PEGAWAI TERLEBIH DAHULU SEBELUM MENAMBAH', 'warning');
@@ -1005,7 +933,7 @@
                 document.getElementById('btn-submit-asn').innerText = "Simpan Data";
                 showMessage('Berhasil', `Data pegawai ${nama} berhasil disimpan.`, 'success');
                 if(!document.getElementById('view-data-asn').classList.contains('hidden')) loadDataASN();
-            }).simpanASN(nip, nama, status, jabatan, sekolah, isEditMode); // MENGIRIM PARAMETER isEditMode
+            }).simpanASN(nip, nama, status, jabatan, sekolah, isEditMode);
         }
 
         function handlePengajuanCuti(e) {
@@ -1015,7 +943,7 @@
             const mulai = document.getElementById('cuti-mulai').value;
             const durasi = parseInt(document.getElementById('cuti-durasi').value);
             const satuan = document.getElementById('cuti-satuan').value;
-            const alasan = document.getElementById('cuti-alasan').value; // AMBIL ALASAN
+            const alasan = document.getElementById('cuti-alasan').value;
 
             if(!nip || !jenis || !mulai || !durasi || !alasan) { showMessage('Validasi Gagal', 'Mohon lengkapi semua isian form.', 'warning'); return; }
 
@@ -1025,7 +953,7 @@
 
             if(satuan !== maxAllowed.satuan && !(satuan === 'hari' && maxAllowed.satuan === 'bulan')) {
                 if(maxAllowed.satuan === 'hari' && satuan === 'bulan') {
-                    showMessage('Pelanggaran Regulasi', `Cuti ${jenis} maksimal adalah ${maxAllowed.val} HARI, tidak bisa mengajukan dalam hitungan bulan.`, 'error');
+                    showMessage('Pelanggaran Regulasi', `Cuti ${jenis} maksimal adalah ${maxAllowed.val} HARI.`, 'error');
                     return;
                 }
             }
@@ -1035,7 +963,7 @@
             if(maxAllowed.satuan === 'bulan' && satuan === 'hari') maxHitung = maxAllowed.val * 22;
 
             if(alreadyTaken + reqValue > maxHitung) {
-                 showMessage('Pelanggaran Regulasi BKN', `Pengajuan ditolak. Kuota Cuti ${jenis} untuk ${asn.status} tersisa ${maxHitung - alreadyTaken} ${satuan}.`, 'error');
+                 showMessage('Pelanggaran Regulasi BKN', `Pengajuan ditolak. Kuota Cuti ${jenis} tersisa ${maxHitung - alreadyTaken} ${satuan}.`, 'error');
                  return;
             }
 
@@ -1048,10 +976,9 @@
             asn.cutiDiambil[jenis] += durasi;
 
             google.script.run.withSuccessHandler(function() {
-                // Simpan variabel alasan
                 dbCuti.push({ id: newId, nip: asn.nip, nama: asn.nama, jenis: jenis, tglMulai: mulai, tglAkhir: tglAkhir, durasi: durasi, satuan: satuan, status: 'Disetujui', tglAju: today, alasan: alasan });
                 document.getElementById('btn-submit-cuti').innerText = "Ajukan Cuti";
-                showMessage('Berhasil Disetujui', `Pengajuan cuti otomatis disetujui, dan kuota telah dipotong oleh sistem pada Spreadsheet.`, 'success');
+                showMessage('Berhasil Disetujui', `Pengajuan cuti otomatis disetujui.`, 'success');
                 navigate('riwayat');
             }).simpanCuti(newId, asn.nip, asn.nama, jenis, mulai, tglAkhir, durasi, satuan, 'Disetujui', today, alasan, JSON.stringify(asn.cutiDiambil));
         }
@@ -1068,10 +995,10 @@
                      else if (statusTujuan !== 'Disetujui' && oldStatus === 'Disetujui') asn.cutiDiambil[cuti.jenis] -= cuti.durasi;
                 }
                 
-                showMessage('Memproses', 'Merubah status di Database...', 'info');
+                showMessage('Memproses', 'Merubah status...', 'info');
                 google.script.run.withSuccessHandler(function() {
                     loadRiwayat();
-                    showMessage('Status Diperbarui', `Cuti ${cuti.nama} telah ${statusTujuan} di Spreadsheet.`, 'success');
+                    showMessage('Status Diperbarui', `Cuti ${cuti.nama} telah ${statusTujuan}.`, 'success');
                 }).updateStatusCuti(id, statusTujuan, cuti.nip, JSON.stringify(asn ? asn.cutiDiambil : {}));
             }
         }
@@ -1105,7 +1032,6 @@
                     const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
                     
                     if(jsonData.length > 0) {
-                        // CEK DUPLIKAT DARI EXCEL
                         const hasDuplicate = jsonData.some(row => {
                             const nipRow = row['NIP'] || row['NIP / NI PPPK'] || row['nip'] || '-';
                             return dbASN.some(a => a.nip == nipRow);
@@ -1117,9 +1043,9 @@
                             return;
                         }
 
-                        showMessage('Memproses Data...', 'Menyimpan ribuan data ke Google Sheets, Mohon Tunggu.', 'info');
+                        showMessage('Memproses Data...', 'Menyimpan data ke Spreadsheet.', 'info');
                         google.script.run.withSuccessHandler(function() {
-                            showMessage('Unggah Berhasil', `Data dari file ${file.name} berhasil disimpan ke Spreadsheet! Silahkan muat ulang aplikasi untuk melihat perubahannya.`, 'success');
+                            showMessage('Unggah Berhasil', `Data berhasil disimpan!`, 'success');
                             event.target.value = ''; 
                             google.script.run.withSuccessHandler(function(newData) {
                                 dbASN = newData.dbASN;
@@ -1132,6 +1058,34 @@
                 };
                 reader.readAsArrayBuffer(file);
             }
+        }
+
+        function downloadExcelRiwayat() {
+            const btn = document.getElementById('btn-export-excel');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            btn.disabled = true;
+
+            google.script.run
+            .withFailureHandler(function(err) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                showMessage('Gagal Export', 'Terjadi kesalahan saat mengunduh: ' + err.message, 'error');
+            })
+            .withSuccessHandler(function(res) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                const a = document.createElement('a');
+                a.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + res.base64;
+                a.download = res.filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                showMessage('Berhasil', 'File Excel Riwayat Cuti berhasil diunduh.', 'success');
+            })
+            .exportRiwayatExcel(currentUser);
         }
 
         function handleLogin(e) {
@@ -1147,11 +1101,7 @@
                 document.getElementById('active-user-role').innerText = currentUser.role;
                 
                 const menuAkun = document.getElementById('menu-manajemen-akun');
-                
-                // PERBAIKAN LOGIKA PENGECEKAN ROLE
-                // Memastikan teks role tidak *case-sensitive* (superadmin/Superadmin/SUPERADMIN)
                 if(currentUser.role.trim().toLowerCase() === 'superadmin') {
-                    // Tampilkan menu khusus super admin
                     menuAkun.classList.remove('hidden'); 
                     menuAkun.classList.add('block');
                 } else {
@@ -1164,7 +1114,7 @@
                     document.getElementById('login-screen').classList.add('hidden');
                     document.getElementById('app-wrapper').classList.remove('hidden');
                     navigate('dashboard');
-                    showMessage('Login Berhasil', `Selamat datang, ${currentUser.nama}. Anda terhubung dengan Database Spreadsheet!`, 'success');
+                    showMessage('Login Berhasil', `Selamat datang, ${currentUser.nama}.`, 'success');
                 }, 400);
 
             } else {
@@ -1181,7 +1131,6 @@
             setTimeout(() => { document.getElementById('login-screen').classList.remove('opacity-0'); }, 50);
         }
 
-        // LOAD TABEL MANAJEMEN AKUN (Pencarian NIP, Nama, Username)
         function loadManajemenAkun() {
             const tbody = document.getElementById('akun-table-body');
             const keyword = document.getElementById('search-akun') ? document.getElementById('search-akun').value.toLowerCase() : '';
@@ -1198,9 +1147,8 @@
                         <td class="py-3 px-4 text-xs font-mono bg-gray-50 border border-gray-200 rounded px-2">${u.password}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs font-bold shadow-sm ${roleBadge}">${u.role}</span></td>
                         <td class="py-3 px-4 text-center">
-                            <!-- TOMBOL EDIT / RESET PASSWORD -->
-                            <button onclick="editAkun(${u.id})" class="bg-amber-100 text-amber-600 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm" title="Edit Akun & Reset Password">
-                                <i class="fas fa-pen mr-1"></i> Edit & Reset Password
+                            <button onclick="editAkun(${u.id})" class="bg-amber-100 text-amber-600 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition text-xs font-semibold shadow-sm">
+                                <i class="fas fa-pen mr-1"></i> Edit & Reset
                             </button>
                         </td>
                     </tr>
@@ -1208,7 +1156,6 @@
             });
         }
 
-        // FUNGSI TAMPILKAN MODAL TAMBAH ADMIN
         function showModalAkun() {
             document.getElementById('modal-akun-title').innerText = 'Tambah Akun Admin Baru';
             document.getElementById('akun-id').value = '';
@@ -1225,7 +1172,6 @@
             }, 10);
         }
 
-        // FUNGSI TAMPILKAN MODAL EDIT/RESET PASSWORD
         function editAkun(id) {
             const akun = dbUsers.find(u => u.id == id);
             if(akun) {
@@ -1245,7 +1191,6 @@
             }
         }
 
-        // SIMPAN & UPDATE AKUN KE SPREADSHEET
         function handleSimpanAkun(e) {
             e.preventDefault();
             const id = document.getElementById('akun-id').value;
@@ -1255,7 +1200,7 @@
             const pass = document.getElementById('akun-pass').value;
             const role = document.getElementById('akun-role').value;
 
-            document.getElementById('btn-submit-akun').innerText = "Menyimpan ke Database...";
+            document.getElementById('btn-submit-akun').innerText = "Menyimpan...";
 
             let isEdit = id ? true : false;
             let finalId = id || Date.now();
@@ -1271,7 +1216,7 @@
                 document.getElementById('btn-submit-akun').innerText = "Simpan Data Akun";
                 closeModal('modal-akun');
                 loadManajemenAkun();
-                showMessage('Data Akun Diperbarui', `Akun ${nama} berhasil tersimpan ke Spreadsheet.`, 'success');
+                showMessage('Data Akun Diperbarui', `Akun ${nama} berhasil tersimpan.`, 'success');
             }).simpanAkun(finalId, nip, nama, user, pass, role, isEdit);
         }
     </script>
