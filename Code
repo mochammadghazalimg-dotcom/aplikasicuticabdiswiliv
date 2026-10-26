@@ -121,6 +121,30 @@ function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, st
   return "Saved";
 }
 
+function simpanAkun(id, nip, nama, user, pass, role, isEdit) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName("Akun_Admin");
+  var data = sheet.getDataRange().getValues();
+
+  if (isEdit) {
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][5] == id) { // Index 5 adalah kolom ID
+        sheet.getRange(i + 1, 1, 1, 5).setValues([[nip, nama, user, pass, role]]);
+        return "Edited";
+      }
+    }
+  } else {
+    // Validasi agar username tidak ganda (opsional)
+    for (var j = 1; j < data.length; j++) {
+      if (data[j][2] == user) {
+        return "Duplicate";
+      }
+    }
+    sheet.appendRow([nip, nama, user, pass, role, id]);
+    return "Saved";
+  }
+}
+
 function simpanASN(nip, nama, status, jabatan, sekolah, isEdit) {
   var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Data_ASN");
   var data = sheet.getDataRange().getValues();
