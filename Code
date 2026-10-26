@@ -18,12 +18,48 @@ function initSheet(sheetName, headers) {
   return sheet;
 }
 
+// Fungsi untuk mengecek pergantian tahun dan menggeser data Rekapan
+function cekDanGeserTahunRekapan(ss) {
+  var prop = PropertiesService.getScriptProperties();
+  var tahunSekarang = new Date().getFullYear().toString();
+  var tahunTerakhirUpdate = prop.getProperty("TAHUN_UPDATE_REKAPAN") || "";
+  var isUpdatedNow = false;
+
+  if (tahunTerakhirUpdate !== tahunSekarang) {
+    var sheetRekapan = ss.getSheetByName("Rekapan");
+    if (sheetRekapan) {
+      var dataRekapan = sheetRekapan.getDataRange().getValues();
+      
+      // Mulai dari baris ke-2 (index 1) untuk melewati header
+      for (var i = 1; i < dataRekapan.length; i++) {
+        var nip = dataRekapan[i][0];
+        if (nip) {
+          var tahun1 = dataRekapan[i][2]; // Kolom C
+          var tahunSekarangValue = dataRekapan[i][4]; // Kolom E
+          
+          // Geser data: Tahun 1 -> Tahun 2, Tahun Sekarang -> Tahun 1, Kosongkan Tahun Sekarang
+          sheetRekapan.getRange(i + 1, 4).setValue(tahun1); // Set Tahun 2
+          sheetRekapan.getRange(i + 1, 3).setValue(tahunSekarangValue); // Set Tahun 1
+          sheetRekapan.getRange(i + 1, 5).setValue(""); // Kosongkan Tahun Sekarang
+        }
+      }
+      prop.setProperty("TAHUN_UPDATE_REKAPAN", tahunSekarang);
+      isUpdatedNow = true;
+    }
+  }
+  return isUpdatedNow;
+}
+
 function getDB() {
   initSheet("Akun_Admin", ["NIP", "Nama", "Username", "Password", "Role", "ID"]);
   initSheet("Data_ASN", ["NIP", "Nama", "Status", "Jabatan", "Sekolah", "CutiDiambil"]);
   initSheet("Riwayat_Cuti", ["ID", "NIP", "Nama", "Jenis", "TglMulai", "TglAkhir", "Durasi", "Satuan", "Status", "TglAju", "Alasan"]);
+  initSheet("Rekapan", ["NIP", "Nama", "Tahun 1", "Tahun 2", "Tahun Sekarang"]); // Kolom diupdate
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
+  
+  // Cek dan eksekusi pergeseran tahun jika tahun berganti
+  var showGhazaliPopup = cekDanGeserTahunRekapan(ss);
   
   var sAkun = ss.getSheetByName("Akun_Admin").getDataRange().getValues().slice(1);
   var dbUsers = sAkun.map(function(r) { 
@@ -44,21 +80,48 @@ function getDB() {
     return { id: r[0], nip: r[1], nama: r[2], jenis: r[3], tglMulai: tglM, tglAkhir: tglA, durasi: r[6], satuan: r[7], status: r[8], tglAju: tglAju, alasan: r[10] || '-' }; 
   }).filter(function(c){ return c.id; });
 
-  return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti };
+  var sRekapan = ss.getSheetByName("Rekapan").getDataRange().getValues().slice(1);
+  var dbRekapan = sRekapan.map(function(r) {
+    return { nip: r[0], nama: r[1], tahun1: r[2] || '', tahun2: r[3] || '', tahunSekarang: r[4] || '' };
+  }).filter(function(rk){ return rk.nip; });
+
+  return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti, dbRekapan: dbRekapan, showPopupAwalTahun: showGhazaliPopup };
 }
 
-function simpanAkun(id, nip, nama, username, password, role, isEdit) {
-  var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Akun_Admin");
-  if (isEdit) {
-    var data = sheet.getDataRange().getValues();
-    for (var i = 1; i < data.length; i++) {
-      if (data[i][5] == id) {
-        sheet.getRange(i + 1, 1, 1, 6).setValues([[nip, nama, username, password, role, id]]);
-        return "Edited";
-      }
+function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan, updatedCutiDiambilStr) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheetCuti = ss.getSheetByName("Riwayat_Cuti");
+  sheetCuti.appendRow([id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan]);
+  
+  var sheetASN = ss.getSheetByName("Data_ASN");
+  var dataASN = sheetASN.getDataRange().getValues();
+  for (var i = 1; i < dataASN.length; i++) {
+    if (dataASN[i][0] == nip) {
+      sheetASN.getRange(i + 1, 6).setValue(updatedCutiDiambilStr);
+      break;
     }
   }
-  sheet.appendRow([nip, nama, username, password, role, id]);
+
+  // Isi otomatis sheet Rekapan
+  if (jenis.toLowerCase() === 'tahunan') {
+    var sheetRekapan = ss.getSheetByName("Rekapan");
+    var dataRekapan = sheetRekapan.getDataRange().getValues();
+    var found = false;
+    for (var k = 1; k < dataRekapan.length; k++) {
+      if (dataRekapan[k][0] == nip) {
+        var currentTahunSekarang = sheetRekapan.getRange(k + 1, 5).getValue();
+        // Gabungkan tanggal jika sudah ada pengajuan sebelumnya di tahun yang sama
+        var newTglVal = currentTahunSekarang ? currentTahunSekarang + ", " + tglAju : tglAju;
+        sheetRekapan.getRange(k + 1, 5).setValue(newTglVal);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      sheetRekapan.appendRow([nip, nama, "", "", tglAju]);
+    }
+  }
+
   return "Saved";
 }
 
@@ -99,6 +162,26 @@ function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, st
       break;
     }
   }
+
+  // TAMBAHAN: Update sheet Rekapan (khusus cuti tahunan)
+  if (jenis.toLowerCase() === 'tahunan') {
+    var sheetRekapan = ss.getSheetByName("Rekapan");
+    var dataRekapan = sheetRekapan.getDataRange().getValues();
+    var found = false;
+    for (var k = 1; k < dataRekapan.length; k++) {
+      if (dataRekapan[k][0] == nip) {
+        // Cek perpindahan tahun: Jika tahun pada TglAju beda dengan tahun pada TglAju di Tahun 2 (bisa dikembangkan lebih lanjut)
+        // Saat ini, update TglAju terbaru ke kolom Tahun 2 (kolom ke-4)
+        sheetRekapan.getRange(k + 1, 4).setValue(tglAju);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      sheetRekapan.appendRow([nip, nama, "", tglAju]);
+    }
+  }
+
   return "Saved";
 }
 
