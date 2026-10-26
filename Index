@@ -916,7 +916,7 @@
 
                 // Tambahan Tombol Akumulasi Khusus Cuti Tahunan
                 let actionBtn = "";
-                if(j === 'Tahunan' && status === 'PNS') {
+                if(j === 'Tahunan') {
                     actionBtn = `
                         <div class="mt-2 flex gap-1">
                             <button type="button" onclick="terapkanAkumulasi('${nip}', 1)" class="px-2 py-1 bg-yellow-500 text-white text-[10px] rounded hover:bg-yellow-600 transition">Akumulasi 1</button>
