@@ -888,53 +888,62 @@
         }
 
         function updateFormRules(nip) {
-    const jenisSelect = document.getElementById('cuti-jenis');
-    const kuotaContainer = document.getElementById('kuota-info-container');
-    const kuotaGrid = document.getElementById('kuota-grid');
-    const statusInfo = document.getElementById('asn-status-info');
-    const statusBadge = document.getElementById('asn-status-badge');
+            const jenisSelect = document.getElementById('cuti-jenis');
+            const kuotaContainer = document.getElementById('kuota-info-container');
+            const kuotaGrid = document.getElementById('kuota-grid');
+            const statusInfo = document.getElementById('asn-status-info');
+            const statusBadge = document.getElementById('asn-status-badge');
 
-    if(!nip) return;
-    const asn = dbASN.find(a => a.nip == nip);
-    const status = asn.status;
-    const aturan = ATURAN_CUTI[status];
+            if(!nip) return;
+            const asn = dbASN.find(a => a.nip == nip);
+            const status = asn.status;
+            const aturan = ATURAN_CUTI[status];
 
-    statusInfo.classList.remove('hidden');
-    statusBadge.innerText = status;
+            statusInfo.classList.remove('hidden');
+            statusBadge.innerText = status;
     
-    jenisSelect.disabled = false;
-    jenisSelect.innerHTML = '<option value="">-- Pilih Jenis Cuti --</option>';
-    aturan.jenis.forEach(j => { jenisSelect.innerHTML += `<option value="${j}">Cuti ${j}</option>`; });
+            jenisSelect.disabled = false;
+            jenisSelect.innerHTML = '<option value="">-- Pilih Jenis Cuti --</option>';
+            aturan.jenis.forEach(j => { jenisSelect.innerHTML += `<option value="${j}">Cuti ${j}</option>`; });
 
-    kuotaGrid.innerHTML = '';
-    aturan.jenis.forEach(j => {
-        let max = aturan.max[j].val;
-        if (j === 'Tahunan') max += tambahanKuotaLokal; // Sekarang nilai akumulasi akan tetap terbaca
-        let satuan = aturan.max[j].satuan;
-        let diambil = asn.cutiDiambil[j] || 0;
-        let sisa = max - diambil; 
-        let textClass = sisa <= 0 ? 'text-red-500' : 'text-gray-700';
+            kuotaGrid.innerHTML = '';
+            aturan.jenis.forEach(j => {
+                let max = aturan.max[j].val;
+                if (j === 'Tahunan') max += tambahanKuotaLokal; 
+                let satuan = aturan.max[j].satuan;
+                let diambil = asn.cutiDiambil[j] || 0;
+                let sisa = max - diambil; 
+                let textClass = sisa <= 0 ? 'text-red-500' : 'text-gray-700';
 
-        let actionBtn = "";
-        if(j === 'Tahunan') {
-            actionBtn = `
-                <div class="mt-2 flex gap-1">
-                    <button type="button" onclick="terapkanAkumulasi('${nip}', 1)" class="px-2 py-1 bg-yellow-500 text-white text-[10px] rounded hover:bg-yellow-600 transition">Akumulasi 1</button>
-                    <button type="button" onclick="terapkanAkumulasi('${nip}', 2)" class="px-2 py-1 bg-orange-500 text-white text-[10px] rounded hover:bg-orange-600 transition">Akumulasi 2</button>
-                </div>
-            `;
+                // --- TAMBAHAN POPUP PERINGATAN SAAT SISA MINUS ---
+                if (j === 'Tahunan' && sisa < 0) {
+                    if (diambil < 18) {
+                        showMessage("Peringatan Akumulasi Cuti", "SILAHKAN KLIK AKUMULASI 1 TERLEBIH DAHULU", "warning");
+                    } else if (diambil >= 18 && diambil <= 24) {
+                        showMessage("Peringatan Akumulasi Cuti", "SILAHKAN KLIK AKUMULASI 2 TERLEBIH DAHULU", "warning");
+                    }
+                }
+
+                let actionBtn = "";
+                if(j === 'Tahunan') {
+                    actionBtn = `
+                        <div class="mt-2 flex gap-1">
+                              <button type="button" onclick="terapkanAkumulasi('${nip}', 1)" class="px-2 py-1 bg-yellow-500 text-white text-[10px] rounded hover:bg-yellow-600 transition">Akumulasi 1</button>
+                              <button type="button" onclick="terapkanAkumulasi('${nip}', 2)" class="px-2 py-1 bg-orange-500 text-white text-[10px] rounded hover:bg-orange-600 transition">Akumulasi 2</button>
+                        </div>
+                    `;
+                }
+
+                kuotaGrid.innerHTML += `
+                    <div class="bg-white p-2 rounded border border-blue-50">
+                        <p class="font-semibold text-gray-600 mb-1">${j}</p>
+                        <p class="text-sm font-bold ${textClass}" id="sisa-${j}">${sisa} ${satuan} <span class="text-[10px] text-gray-400 font-normal">Sisa</span></p>
+                        ${actionBtn}
+                  </div>
+                `;
+            });
+            kuotaContainer.classList.remove('hidden');
         }
-
-        kuotaGrid.innerHTML += `
-            <div class="bg-white p-2 rounded border border-blue-50">
-                <p class="font-semibold text-gray-600 mb-1">${j}</p>
-                <p class="text-sm font-bold ${textClass}" id="sisa-${j}">${sisa} ${satuan} <span class="text-[10px] text-gray-400 font-normal">Sisa</span></p>
-                ${actionBtn}
-            </div>
-        `;
-    });
-    kuotaContainer.classList.remove('hidden');
-}
 
         function terapkanAkumulasi(nip, tipe) {
             const asn = dbASN.find(a => a.nip == nip);
