@@ -564,6 +564,8 @@
 
     <!-- Javascript Logic -->
     <script>
+        let dbRekapan = [];
+        let tambahanKuotaLokal = 0; // Untuk menyimpan sementara akumulasi tambahan
         let dbUsers = [];
         let dbASN = [];
         let dbCuti = [];
@@ -598,7 +600,12 @@
                 }
                 dbASN = data.dbASN;
                 dbCuti = data.dbCuti;
-                
+                dbRekapan = data.dbRekapan || [];
+                // Cek apakah butuh memunculkan popup awal tahun
+                if (data.showPopupAwalTahun) {
+                    showMessage("Informasi Sistem", "System sudah melakukan update data pada data base Rekapan silahkan melapor ke Ghazali untuk pengecekan", "info");
+                }
+
                 initFilterSekolah(); // Siapkan list sekolah sebelum masuk
                 
                 document.getElementById('btn-login').innerHTML = 'Masuk Sistem <i class="fas fa-arrow-right"></i>';
@@ -879,6 +886,7 @@
         }
 
         function updateFormRules(nip) {
+            tambahanKuotaLokal = 0; // reset tambahan kuota saat ganti user
             const jenisSelect = document.getElementById('cuti-jenis');
             const kuotaContainer = document.getElementById('kuota-info-container');
             const kuotaGrid = document.getElementById('kuota-grid');
@@ -900,19 +908,54 @@
             kuotaGrid.innerHTML = '';
             aturan.jenis.forEach(j => {
                 let max = aturan.max[j].val;
+                if (j === 'Tahunan') max += tambahanKuotaLokal; // Terapkan akumulasi
                 let satuan = aturan.max[j].satuan;
                 let diambil = asn.cutiDiambil[j] || 0;
                 let sisa = max - diambil; 
                 let textClass = sisa <= 0 ? 'text-red-500' : 'text-gray-700';
 
+                // Tambahan Tombol Akumulasi Khusus Cuti Tahunan
+                let actionBtn = "";
+                if(j === 'Tahunan' && status === 'PNS') {
+                    actionBtn = `
+                        <div class="mt-2 flex gap-1">
+                            <button type="button" onclick="terapkanAkumulasi('${nip}', 1)" class="px-2 py-1 bg-yellow-500 text-white text-[10px] rounded hover:bg-yellow-600 transition">Akumulasi 1</button>
+                            <button type="button" onclick="terapkanAkumulasi('${nip}', 2)" class="px-2 py-1 bg-orange-500 text-white text-[10px] rounded hover:bg-orange-600 transition">Akumulasi 2</button>
+                        </div>
+                    `;
+                }
+
                 kuotaGrid.innerHTML += `
                     <div class="bg-white p-2 rounded border border-blue-50">
                         <p class="font-semibold text-gray-600 mb-1">${j}</p>
-                        <p class="text-sm font-bold ${textClass}">${sisa} ${satuan} <span class="text-[10px] text-gray-400 font-normal">Sisa</span></p>
+                        <p class="text-sm font-bold ${textClass}" id="sisa-${j}">${sisa} ${satuan} <span class="text-[10px] text-gray-400 font-normal">Sisa</span></p>
+                        ${actionBtn}
                     </div>
                 `;
             });
             kuotaContainer.classList.remove('hidden');
+        }
+
+        function terapkanAkumulasi(nip, tipe) {
+            const rekapan = dbRekapan.find(r => r.nip == nip);
+            
+            if (tipe === 1) {
+                if (rekapan && rekapan.tahun1) {
+                    showMessage("Pengajuan Ditolak", `ASN ini sudah pengusulan Cuti Tahunan pada: \n${rekapan.tahun1}`, "error");
+                    return;
+                }
+                tambahanKuotaLokal = 6;
+                showMessage("Akumulasi Diterima", "Berhasil menambah 6 Hari pada Kuota Cuti Tahunan.", "success");
+            } else if (tipe === 2) {
+                if (rekapan && rekapan.tahun1 && rekapan.tahun2) {
+                    showMessage("Pengajuan Ditolak", `ASN ini sudah pengusulan Cuti Tahunan pada: \nTahun 1: ${rekapan.tahun1}\nTahun 2: ${rekapan.tahun2}`, "error");
+                    return;
+                }
+                tambahanKuotaLokal = 12;
+                showMessage("Akumulasi Diterima", "Berhasil menambah 12 Hari pada Kuota Cuti Tahunan.", "success");
+            }
+            
+            updateFormRules(nip);
         }
 
         function loadRiwayat() {
@@ -1079,6 +1122,12 @@
             let maxHitung = maxAllowed.val;
             if(maxAllowed.satuan === 'bulan' && satuan === 'hari') maxHitung = maxAllowed.val * 22;
 
+            if (jenis === 'Tahunan') {
+                maxHitung += tambahanKuotaLokal;
+            }
+
+            if(maxAllowed.satuan === 'bulan' && satuan === 'hari') maxHitung = maxAllowed.val * 22;
+            
             if(alreadyTaken + reqValue > maxHitung) {
                  showMessage('Pelanggaran Regulasi BKN', `Pengajuan ditolak. Kuota Cuti ${jenis} tersisa ${maxHitung - alreadyTaken} ${satuan}.`, 'error');
                  return;
