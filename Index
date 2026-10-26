@@ -19,7 +19,7 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        edu: { blue: '#1e3a8a', lightBlue: '#3b82f6', gold: '#f59e0b', bg: '#f8fafc' }
+                        edu: { blue: '#1e3a8a', lightBlue: '#3b82f6', gold: '#f59e0b', bg: '#f4f7fb' }
                     }
                 }
             }
@@ -33,6 +33,7 @@
         .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .fade-in { animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .stat-bar { transition: width 1s ease-in-out; }
         @media print {
             body * { visibility: hidden; }
             #area-cetak-pdf, #area-cetak-pdf * { visibility: visible; }
@@ -80,19 +81,17 @@
     <div id="app-wrapper" class="flex w-full h-full hidden">
         <aside id="sidebar" class="w-64 bg-edu-blue text-white flex flex-col shadow-xl z-20 hidden md:flex transition-all duration-300 relative">
             <div class="p-5 flex flex-col gap-3 border-b border-blue-800">
-                <!-- Baris Logo dan Judul Utama -->
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-inner p-1 shrink-0">
                           <img src="https://i.imgur.com/N8da60H.png" alt="Logo" class="w-full h-full object-contain">
                     </div>
                     <div>
                         <h1 class="text-base font-bold leading-tight tracking-wide text-white">E-TARA CUTI</h1>
-                        <p class="text-[11px] text-slate-250 font-medium">Elektronik Tertib Administrasi Cuti</p>
+                        <p class="text-[11px] text-blue-200 font-medium">Elektronik Tertib Administrasi Cuti</p>
                     </div>
                 </div>
-                <!-- Teks Instansi di Bawah (Selaras / Rata Tengah) -->
                 <div class="text-center pt-1 border-t border-blue-800/50">
-                    <p class="text-[11px] text-blue-200 font-semibold uppercase tracking-wider">Cabang Dinas Pendidikan Wil IV</p>
+                    <p class="text-[11px] text-blue-200 font-semibold uppercase tracking-wider">Cabdin Pendidikan Wil IV</p>
                 </div>
             </div>
             
@@ -139,73 +138,65 @@
                 </button>
                 <h2 class="text-xl font-bold text-gray-800" id="page-title">Dashboard Utama</h2>
                 <div class="flex items-center gap-4 text-gray-500">
-                    <button class="hover:text-edu-blue transition"><i class="fas fa-bell"></i></button>
-                    <button class="hover:text-edu-blue transition"><i class="fas fa-cog"></i></button>
+                    <div class="text-xs font-semibold text-edu-blue bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100 hidden sm:block">
+                        <i class="fas fa-calendar-alt mr-1"></i> Tahun Anggaran 2026
+                    </div>
                 </div>
             </header>
 
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative" id="main-content">
-                <!-- DASHBOARD -->
+                <!-- DASHBOARD TEMA MODERN 2026 -->
                 <div id="view-dashboard" class="page-view fade-in">
+                    <!-- Top Statistic Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-blue-100 text-edu-blue flex items-center justify-center text-xl">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Total ASN</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-total">0</h3>
-                            </div>
+                        <div class="rounded-2xl p-6 shadow-lg bg-gradient-to-br from-blue-900 to-edu-blue text-white transform hover:scale-105 transition duration-300 border border-blue-700 relative overflow-hidden">
+                            <i class="fas fa-users absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+                            <p class="text-sm font-semibold text-blue-100 uppercase tracking-wider">Total Pegawai ASN</p>
+                            <h3 class="text-4xl font-extrabold mt-2" id="stat-total">0</h3>
+                            <p class="text-xs text-blue-200 mt-2"><i class="fas fa-info-circle"></i> Terdaftar di Database</p>
                         </div>
-                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-amber-100 text-edu-gold flex items-center justify-center text-xl">
-                                <i class="fas fa-user-clock"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Sedang Cuti</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-cuti">0</h3>
-                            </div>
+                        <div class="rounded-2xl p-6 shadow-lg bg-gradient-to-br from-emerald-600 to-teal-400 text-white transform hover:scale-105 transition duration-300 border border-emerald-500 relative overflow-hidden">
+                            <i class="fas fa-school absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+                            <p class="text-sm font-semibold text-emerald-100 uppercase tracking-wider">Total Sekolah/Instansi</p>
+                            <h3 class="text-4xl font-extrabold mt-2" id="stat-sekolah">0</h3>
+                            <p class="text-xs text-emerald-100 mt-2"><i class="fas fa-map-marker-alt"></i> Area Cabdin Wil. IV</p>
                         </div>
-                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-xl">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Pengajuan Disetujui</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-approved">0</h3>
-                            </div>
+                        <div class="rounded-2xl p-6 shadow-lg bg-gradient-to-br from-amber-500 to-orange-400 text-white transform hover:scale-105 transition duration-300 border border-amber-400 relative overflow-hidden">
+                            <i class="fas fa-file-signature absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+                            <p class="text-sm font-semibold text-amber-100 uppercase tracking-wider">Total Pengajuan Cuti</p>
+                            <h3 class="text-4xl font-extrabold mt-2" id="stat-cuti">0</h3>
+                            <p class="text-xs text-amber-100 mt-2"><i class="fas fa-clock"></i> Riwayat Keseluruhan</p>
                         </div>
-                        <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-xl">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                            <div>
-                                <p class="text-sm text-gray-500 font-medium">Pengajuan Ditolak</p>
-                                <h3 class="text-2xl font-bold text-gray-800" id="stat-rejected">0</h3>
-                            </div>
+                        <div class="rounded-2xl p-6 shadow-lg bg-gradient-to-br from-purple-700 to-fuchsia-500 text-white transform hover:scale-105 transition duration-300 border border-purple-500 relative overflow-hidden">
+                            <i class="fas fa-check-circle absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+                            <p class="text-sm font-semibold text-purple-100 uppercase tracking-wider">Pengajuan Disetujui</p>
+                            <h3 class="text-4xl font-extrabold mt-2" id="stat-approved">0</h3>
+                            <p class="text-xs text-purple-200 mt-2"><i class="fas fa-chart-line"></i> Status Diterima</p>
                         </div>
                     </div>
 
-                    <div class="bg-blue-50 border-l-4 border-edu-blue rounded-r-xl p-5 mb-8">
-                        <h4 class="font-bold text-edu-blue mb-2"><i class="fas fa-info-circle mr-2"></i>Sistem Penyesuaian Regulasi Aktif</h4>
-                        <p class="text-sm text-gray-700">Aplikasi ini secara otomatis menerapkan <strong>Peraturan BKN No. 7 Tahun 2021</strong> untuk perhitungan cuti PNS dan <strong>Peraturan BKN No. 7 Tahun 2022</strong> untuk PPPK.</p>
-                    </div>
+                    <!-- Main Dashboard Content (Charts) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Panel 1: Jumlah Pengusulan Cuti -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                            <h3 class="text-lg font-extrabold text-gray-800 mb-6 flex items-center gap-2">
+                                <span class="bg-edu-blue text-white w-8 h-8 rounded-lg flex items-center justify-center"><i class="fas fa-chart-bar"></i></span>
+                                Jumlah Pengusulan (Berkas) per Jenis Cuti
+                            </h3>
+                            <div id="chart-usulan" class="space-y-5">
+                                <!-- Data injected via JS -->
+                            </div>
+                        </div>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-bold text-gray-800 mb-4">Pengajuan Cuti Terbaru</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="border-b border-gray-200 text-sm text-gray-500">
-                                        <th class="py-3 px-4 font-semibold">Nama Pegawai</th>
-                                        <th class="py-3 px-4 font-semibold">Jenis Cuti</th>
-                                        <th class="py-3 px-4 font-semibold">Tgl Mulai</th>
-                                        <th class="py-3 px-4 font-semibold">Durasi</th>
-                                        <th class="py-3 px-4 font-semibold">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="dashboard-recent-table" class="text-sm"></tbody>
-                            </table>
+                        <!-- Panel 2: Jumlah ASN Pengusul -->
+                        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                            <h3 class="text-lg font-extrabold text-gray-800 mb-6 flex items-center gap-2">
+                                <span class="bg-edu-gold text-white w-8 h-8 rounded-lg flex items-center justify-center"><i class="fas fa-user-tag"></i></span>
+                                Jumlah ASN (Orang) yang Mengajukan Cuti
+                            </h3>
+                            <div id="chart-asn" class="space-y-5">
+                                <!-- Data injected via JS -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,12 +204,22 @@
                 <!-- DATA ASN -->
                 <div id="view-data-asn" class="page-view hidden fade-in">
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                            <h3 class="text-lg font-bold text-gray-800">Daftar Pegawai (PNS & PPPK)</h3>
-                            <div class="flex gap-2 flex-wrap justify-end">
-                                <div class="relative">
+                        <div class="flex flex-col xl:flex-row justify-between items-center mb-6 gap-4">
+                            <h3 class="text-lg font-bold text-gray-800 min-w-max">Database Pegawai ASN</h3>
+                            
+                            <div class="flex gap-2 flex-wrap justify-end w-full">
+                                <!-- FITUR FILTER SEKOLAH -->
+                                <div class="relative min-w-[200px] flex-grow sm:flex-grow-0">
+                                    <i class="fas fa-school absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <select id="filter-sekolah" onchange="loadDataASN()" class="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full bg-gray-50 font-semibold text-edu-blue appearance-none cursor-pointer hover:bg-gray-100 transition">
+                                        <option value="">-- Memuat Data Sekolah --</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+                                </div>
+                                
+                                <div class="relative w-full sm:w-auto">
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    <input type="text" id="search-asn" onkeyup="loadDataASN()" placeholder="Cari NIP/Nama..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-64">
+                                    <input type="text" id="search-asn" onkeyup="loadDataASN()" placeholder="Cari NIP/Nama..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-48">
                                 </div>
                                 <button onclick="downloadTemplate()" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
                                     <i class="fas fa-file-excel"></i> Template
@@ -232,16 +233,16 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-gray-50 border-y border-gray-200 text-sm text-gray-600">
-                                        <th class="py-3 px-4 font-semibold">NIP / NI PPPK</th>
-                                        <th class="py-3 px-4 font-semibold">Nama Lengkap</th>
-                                        <th class="py-3 px-4 font-semibold">Status</th>
-                                        <th class="py-3 px-4 font-semibold">Jabatan</th>
-                                        <th class="py-3 px-4 font-semibold">Sekolah</th>
-                                        <th class="py-3 px-4 font-semibold text-center">Aksi</th>
+                                    <tr class="bg-gray-100 border-b border-gray-200 text-sm text-gray-700">
+                                        <th class="py-3 px-4 font-bold">NIP / NI PPPK</th>
+                                        <th class="py-3 px-4 font-bold">Nama Lengkap</th>
+                                        <th class="py-3 px-4 font-bold">Status</th>
+                                        <th class="py-3 px-4 font-bold">Jabatan</th>
+                                        <th class="py-3 px-4 font-bold">Sekolah</th>
+                                        <th class="py-3 px-4 font-bold text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="asn-table-body" class="text-sm text-gray-700"></tbody>
@@ -334,22 +335,21 @@
                                     <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                                     <input type="text" id="search-riwayat" onkeyup="loadRiwayat()" placeholder="Cari NIP/Nama ASN..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-sm w-full sm:w-72">
                                 </div>
-                                <!-- TOMBOL UNDUH EXCEL RIWAYAT -->
                                 <button onclick="downloadExcelRiwayat()" id="btn-export-excel" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-md text-sm font-medium flex items-center gap-2">
                                     <i class="fas fa-file-excel"></i> Unduh Excel
                                 </button>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-gray-50 border-y border-gray-200 text-sm text-gray-600">
-                                        <th class="py-3 px-4 font-semibold">Tgl Pengajuan</th>
-                                        <th class="py-3 px-4 font-semibold">Pegawai</th>
-                                        <th class="py-3 px-4 font-semibold">Jenis Cuti</th>
-                                        <th class="py-3 px-4 font-semibold">Durasi</th>
-                                        <th class="py-3 px-4 font-semibold">Status</th>
-                                        <th class="py-3 px-4 font-semibold text-center">Aksi</th>
+                                    <tr class="bg-gray-100 border-b border-gray-200 text-sm text-gray-700">
+                                        <th class="py-3 px-4 font-bold">Tgl Pengajuan</th>
+                                        <th class="py-3 px-4 font-bold">Pegawai</th>
+                                        <th class="py-3 px-4 font-bold">Jenis Cuti</th>
+                                        <th class="py-3 px-4 font-bold">Durasi</th>
+                                        <th class="py-3 px-4 font-bold">Status</th>
+                                        <th class="py-3 px-4 font-bold text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="riwayat-table-body" class="text-sm text-gray-700"></tbody>
@@ -373,16 +373,16 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-gray-50 border-y border-gray-200 text-sm text-gray-600">
-                                        <th class="py-3 px-4 font-semibold">NIP Admin</th>
-                                        <th class="py-3 px-4 font-semibold">Nama Admin</th>
-                                        <th class="py-3 px-4 font-semibold">Username Login</th>
-                                        <th class="py-3 px-4 font-semibold">Password</th>
-                                        <th class="py-3 px-4 font-semibold">Role Akses</th>
-                                        <th class="py-3 px-4 font-semibold text-center">Aksi</th>
+                                    <tr class="bg-gray-100 border-b border-gray-200 text-sm text-gray-700">
+                                        <th class="py-3 px-4 font-bold">NIP Admin</th>
+                                        <th class="py-3 px-4 font-bold">Nama Admin</th>
+                                        <th class="py-3 px-4 font-bold">Username Login</th>
+                                        <th class="py-3 px-4 font-bold">Password</th>
+                                        <th class="py-3 px-4 font-bold">Role Akses</th>
+                                        <th class="py-3 px-4 font-bold text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="akun-table-body" class="text-sm text-gray-700"></tbody>
@@ -567,6 +567,7 @@
         let dbUsers = [];
         let dbASN = [];
         let dbCuti = [];
+        let listSekolah = [];
         let currentUser = null; 
 
         const ATURAN_CUTI = {
@@ -598,10 +599,30 @@
                 dbASN = data.dbASN;
                 dbCuti = data.dbCuti;
                 
+                initFilterSekolah(); // Siapkan list sekolah sebelum masuk
+                
                 document.getElementById('btn-login').innerHTML = 'Masuk Sistem <i class="fas fa-arrow-right"></i>';
                 document.getElementById('btn-login').disabled = false;
             }).getDB();
         };
+
+        // Mengisi pilihan nama sekolah di filter Data ASN
+        function initFilterSekolah() {
+            const select = document.getElementById('filter-sekolah');
+            listSekolah = [...new Set(dbASN.map(a => a.sekolah))].filter(s => s && s.trim() !== '-').sort();
+            
+            select.innerHTML = '<option value="">-- Tampilkan Semua Sekolah --</option>';
+            listSekolah.forEach(s => {
+                select.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            // Set default agar hanya SMAN 1 WAJO yang tampil pertama kali agar tidak hang
+            if (listSekolah.includes('SMAN 1 WAJO')) {
+                select.value = 'SMAN 1 WAJO';
+            } else if (listSekolah.length > 0) {
+                select.value = listSekolah[0]; // Set ke sekolah pertama jika SMAN 1 tidak ada
+            }
+        }
 
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
@@ -686,51 +707,135 @@
             }, 10);
         }
 
+        // --- PEMBARUAN FUNGSI DASHBOARD (TEMA MODERN) ---
         function loadDashboard() {
+            // Update Stat Atas
             document.getElementById('stat-total').innerText = dbASN.length;
-            const cutiAktif = dbCuti.filter(c => c.status === 'Disetujui').length; 
-            document.getElementById('stat-cuti').innerText = cutiAktif;
-            document.getElementById('stat-approved').innerText = cutiAktif;
-            document.getElementById('stat-rejected').innerText = dbCuti.filter(c => c.status === 'Ditolak').length;
+            document.getElementById('stat-sekolah').innerText = listSekolah.length;
+            document.getElementById('stat-cuti').innerText = dbCuti.length;
+            document.getElementById('stat-approved').innerText = dbCuti.filter(c => c.status === 'Disetujui').length;
 
-            const tbody = document.getElementById('dashboard-recent-table');
-            tbody.innerHTML = '';
-            [...dbCuti].reverse().slice(0, 5).forEach(c => {
-                const statusColor = c.status === 'Disetujui' ? 'text-green-600 bg-green-50' : 
-                                  c.status === 'Ditolak' ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50';
-                tbody.innerHTML += `
-                    <tr class="border-b border-gray-100 hover:bg-gray-50">
-                        <td class="py-3 px-4">${c.nama}<br><span class="text-xs text-gray-400">${c.nip}</span></td>
-                        <td class="py-3 px-4 font-medium text-edu-blue">${c.jenis}</td>
-                        <td class="py-3 px-4">${c.tglMulai}</td>
-                        <td class="py-3 px-4">${c.durasi} ${c.satuan}</td>
-                        <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs font-semibold ${statusColor}">${c.status}</span></td>
-                    </tr>
+            // Agregasi Data Cuti
+            const rekap = {};
+            const jenisAll = ['Tahunan', 'Sakit', 'Melahirkan', 'Besar', 'Alasan Penting', 'CLTN'];
+            jenisAll.forEach(j => rekap[j] = { totalUsulan: 0, setASN: new Set() });
+
+            let maxUsulan = 1;
+            let maxAsn = 1;
+
+            dbCuti.forEach(c => {
+                let j = c.jenis;
+                if(j.startsWith('Cuti ')) j = j.replace('Cuti ', '');
+                if(rekap[j]) {
+                    rekap[j].totalUsulan++;
+                    rekap[j].setASN.add(c.nip);
+                }
+            });
+
+            // Cari nilai Max untuk progress bar HTML
+            jenisAll.forEach(j => {
+                if (rekap[j].totalUsulan > maxUsulan) maxUsulan = rekap[j].totalUsulan;
+                if (rekap[j].setASN.size > maxAsn) maxAsn = rekap[j].setASN.size;
+            });
+
+            const divUsulan = document.getElementById('chart-usulan');
+            const divAsn = document.getElementById('chart-asn');
+            divUsulan.innerHTML = '';
+            divAsn.innerHTML = '';
+
+            // Warna-warni Chart
+            const colors = {
+                'Tahunan': 'bg-blue-500', 'Sakit': 'bg-red-400', 'Melahirkan': 'bg-pink-400', 
+                'Besar': 'bg-purple-500', 'Alasan Penting': 'bg-amber-400', 'CLTN': 'bg-gray-600'
+            };
+
+            jenisAll.forEach(j => {
+                const total = rekap[j].totalUsulan;
+                const asns = rekap[j].setASN.size;
+                
+                const wUsulan = (total / maxUsulan) * 100;
+                const wAsn = (asns / maxAsn) * 100;
+                const bg = colors[j] || 'bg-edu-blue';
+
+                // Chart Usulan
+                divUsulan.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-1">
+                            <span class="text-gray-700">Cuti ${j}</span>
+                            <span class="text-gray-900">${total} Berkas</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-3">
+                            <div class="${bg} h-3 rounded-full stat-bar" style="width: 0%" data-target="${wUsulan}%"></div>
+                        </div>
+                    </div>
+                `;
+
+                // Chart ASN
+                divAsn.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-1">
+                            <span class="text-gray-700">Cuti ${j}</span>
+                            <span class="text-gray-900">${asns} Orang</span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-3">
+                            <div class="${bg} h-3 rounded-full stat-bar" style="width: 0%" data-target="${wAsn}%"></div>
+                        </div>
+                    </div>
                 `;
             });
+
+            // Animasi Bar
+            setTimeout(() => {
+                document.querySelectorAll('.stat-bar').forEach(bar => {
+                    bar.style.width = bar.getAttribute('data-target');
+                });
+            }, 100);
         }
 
+        // --- PEMBARUAN FUNGSI DATA ASN (MENCEGAH HANG) ---
         function loadDataASN() {
             const tbody = document.getElementById('asn-table-body');
             const keyword = document.getElementById('search-asn') ? document.getElementById('search-asn').value.toLowerCase() : '';
-            tbody.innerHTML = '';
+            const sekolahFilter = document.getElementById('filter-sekolah') ? document.getElementById('filter-sekolah').value : '';
             
-            dbASN.forEach(a => {
-                if(keyword && !a.nama.toLowerCase().includes(keyword) && !a.nip.toString().includes(keyword)) return;
+            // Gunakan metode string agar rendering ribuan tabel tidak lag
+            let htmlString = ''; 
+            let count = 0;
+            const MAX_TAMPIL = 500; // Batas render aman
+            
+            for(let i = 0; i < dbASN.length; i++) {
+                const a = dbASN[i];
+                // Proses filtering
+                if(sekolahFilter && a.sekolah !== sekolahFilter) continue;
+                if(keyword && !a.nama.toLowerCase().includes(keyword) && !a.nip.toString().includes(keyword)) continue;
+                
+                count++;
+                // Proteksi jika data lebih dari 500 dan tidak ada kata kunci pencarian
+                if(count > MAX_TAMPIL && !keyword) {
+                    htmlString += `<tr><td colspan="6" class="text-center py-4 text-red-500 font-bold bg-red-50">Terdapat lebih dari ${MAX_TAMPIL} data. Gunakan kolom pencarian untuk melihat sisa pegawai.</td></tr>`;
+                    break;
+                }
+
                 const badge = a.status === 'PNS' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700';
-                tbody.innerHTML += `
+                htmlString += `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                         <td class="py-3 px-4 font-mono text-xs">${a.nip}</td>
                         <td class="py-3 px-4 font-medium">${a.nama}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs font-bold ${badge}">${a.status}</span></td>
                         <td class="py-3 px-4">${a.jabatan}</td>
-                        <td class="py-3 px-4">${a.sekolah}</td>
+                        <td class="py-3 px-4 text-xs font-semibold text-gray-600">${a.sekolah}</td>
                         <td class="py-3 px-4 text-center">
-                            <button onclick="editASN('${a.nip}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="editASN('${a.nip}')" class="text-blue-500 hover:text-blue-700 mx-1 bg-blue-50 p-2 rounded-lg" title="Edit"><i class="fas fa-edit"></i></button>
                         </td>
                     </tr>
                 `;
-            });
+            }
+
+            if(count === 0) {
+                 htmlString = `<tr><td colspan="6" class="text-center py-6 text-gray-500">Tidak ada data ditemukan untuk pencarian/filter sekolah ini.</td></tr>`;
+            }
+
+            tbody.innerHTML = htmlString;
         }
 
         function loadFormPengajuan() {
@@ -813,10 +918,15 @@
         function loadRiwayat() {
             const tbody = document.getElementById('riwayat-table-body');
             const keyword = document.getElementById('search-riwayat') ? document.getElementById('search-riwayat').value.toLowerCase() : '';
-            tbody.innerHTML = '';
             
+            let htmlStr = '';
+            let count = 0;
+
             [...dbCuti].reverse().forEach(c => {
                 if(keyword && !c.nama.toLowerCase().includes(keyword) && !c.nip.toString().includes(keyword)) return;
+                count++;
+                if(count > 100 && !keyword) return; // Batasi render 100 cuti terbaru di UI
+                
                 const statusColor = c.status === 'Disetujui' ? 'text-green-600 bg-green-50' : c.status === 'Ditolak' ? 'text-red-600 bg-red-50' : 'text-amber-600 bg-amber-50';
                 
                 let aksiHtml = `<button onclick="showDetailCuti(${c.id})" class="text-blue-500 hover:bg-blue-50 px-2 py-1 rounded mx-1" title="Lihat Detail"><i class="fas fa-eye"></i></button>`;
@@ -828,17 +938,22 @@
                      `;
                 }
                 
-                tbody.innerHTML += `
+                htmlStr += `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
-                        <td class="py-3 px-4 whitespace-nowrap">${c.tglAju}</td>
-                        <td class="py-3 px-4 cursor-pointer hover:text-edu-blue" onclick="showDetailCuti(${c.id})">${c.nama}<br><span class="text-xs text-gray-400">${c.nip}</span></td>
-                        <td class="py-3 px-4 font-medium">${c.jenis}</td>
-                        <td class="py-3 px-4">${c.durasi} ${c.satuan}</td>
+                        <td class="py-3 px-4 whitespace-nowrap text-xs text-gray-500">${c.tglAju}</td>
+                        <td class="py-3 px-4 cursor-pointer hover:text-edu-blue" onclick="showDetailCuti(${c.id})"><span class="font-semibold">${c.nama}</span><br><span class="text-[11px] font-mono text-gray-400">${c.nip}</span></td>
+                        <td class="py-3 px-4 font-bold text-edu-blue text-xs">${c.jenis}</td>
+                        <td class="py-3 px-4 text-sm font-medium text-gray-700">${c.durasi} ${c.satuan}</td>
                         <td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-xs font-semibold ${statusColor}">${c.status}</span></td>
                         <td class="py-3 px-4 text-center whitespace-nowrap">${aksiHtml}</td>
                     </tr>
                 `;
             });
+            
+            if(count > 100 && !keyword) {
+                 htmlStr += `<tr><td colspan="6" class="text-center py-4 text-sm text-gray-400">Hanya menampilkan 100 riwayat terbaru. Gunakan fitur pencarian.</td></tr>`;
+            }
+            tbody.innerHTML = htmlStr;
         }
 
         function showDetailCuti(id) {
@@ -932,6 +1047,8 @@
                 document.getElementById('new-sekolah').value = '';
                 document.getElementById('btn-submit-asn').innerText = "Simpan Data";
                 showMessage('Berhasil', `Data pegawai ${nama} berhasil disimpan.`, 'success');
+                
+                initFilterSekolah(); // Perbarui list sekolah jika ada sekolah baru
                 if(!document.getElementById('view-data-asn').classList.contains('hidden')) loadDataASN();
             }).simpanASN(nip, nama, status, jabatan, sekolah, isEditMode);
         }
@@ -1049,6 +1166,7 @@
                             event.target.value = ''; 
                             google.script.run.withSuccessHandler(function(newData) {
                                 dbASN = newData.dbASN;
+                                initFilterSekolah(); // Perbarui list sekolah setelah unggah
                                 loadDataASN();
                             }).getDB();
                         }).uploadASNBulk(jsonData);
@@ -1134,12 +1252,12 @@
         function loadManajemenAkun() {
             const tbody = document.getElementById('akun-table-body');
             const keyword = document.getElementById('search-akun') ? document.getElementById('search-akun').value.toLowerCase() : '';
-            tbody.innerHTML = '';
             
+            let htmlStr = '';
             dbUsers.forEach(u => {
                 if(keyword && !u.nama.toLowerCase().includes(keyword) && !u.nip.includes(keyword) && !u.username.toLowerCase().includes(keyword)) return;
                 const roleBadge = (u.role.trim().toLowerCase() === 'superadmin') ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700';
-                tbody.innerHTML += `
+                htmlStr += `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
                         <td class="py-3 px-4 font-mono text-xs">${u.nip}</td>
                         <td class="py-3 px-4 font-medium">${u.nama}</td>
@@ -1154,6 +1272,7 @@
                     </tr>
                 `;
             });
+            tbody.innerHTML = htmlStr;
         }
 
         function showModalAkun() {
