@@ -914,7 +914,7 @@
                 let sisa = max - diambil; 
                 let textClass = sisa <= 0 ? 'text-red-500' : 'text-gray-700';
 
-                // Tambahan Tombol Akumulasi Khusus Cuti Tahunan
+                // Tombol Akumulasi ditampilkan untuk seluruh ASN (PPPK & PNS)
                 let actionBtn = "";
                 if(j === 'Tahunan') {
                     actionBtn = `
@@ -937,16 +937,45 @@
         }
 
         function terapkanAkumulasi(nip, tipe) {
-            const rekapan = dbRekapan.find(r => r.nip == nip);
-            
+            const asn = dbASN.find(a => a.nip == nip);
+            if (!asn) return;
+
+            // 1. Ekstrak Tahun Pengangkatan dari NIP (digit ke 9-12)
+            const nipStr = asn.nip.toString().trim();
+            let tahunPengangkatan = 0;
+            if (nipStr.length >= 12) {
+                tahunPengangkatan = parseInt(nipStr.substring(8, 12));
+            }
+
+            // 2. Ambil tahun dari tanggal pengajuan pada form (atau tahun berjalan jika belum diisi)
+            const tglMulai = document.getElementById('cuti-mulai').value;
+            const tahunPengajuan = tglMulai ? new Date(tglMulai).getFullYear() : new Date().getFullYear();
+
+            // Hitung selisih masa kerja (dalam tahun)
+            const masaKerjaTahun = tahunPengajuan - tahunPengangkatan;
+
+            // 3. Validasi Masa Kerja berdasarkan Tipe Akumulasi
             if (tipe === 1) {
+                if (tahunPengangkatan > 0 && masaKerjaTahun < 1) {
+                    showMessage("Pengajuan Ditolak", `ASN ini (${asn.nama}, ${asn.nip}) Belum mencukupi masa kerja 1 Tahun`, "error");
+                    return;
+                }
+
+                const rekapan = dbRekapan.find(r => r.nip == nip);
                 if (rekapan && rekapan.tahun1) {
                     showMessage("Pengajuan Ditolak", `ASN ini sudah pengusulan Cuti Tahunan pada: \n${rekapan.tahun1}`, "error");
                     return;
                 }
                 tambahanKuotaLokal = 6;
                 showMessage("Akumulasi Diterima", "Berhasil menambah 6 Hari pada Kuota Cuti Tahunan.", "success");
+
             } else if (tipe === 2) {
+                if (tahunPengangkatan > 0 && masaKerjaTahun < 2) {
+                    showMessage("Pengajuan Ditolak", `ASN ini (${asn.nama}, ${asn.nip}) Belum mencukupi masa kerja 2 Tahun atau lebih`, "error");
+                    return;
+                }
+
+                const rekapan = dbRekapan.find(r => r.nip == nip);
                 if (rekapan && rekapan.tahun1 && rekapan.tahun2) {
                     showMessage("Pengajuan Ditolak", `ASN ini sudah pengusulan Cuti Tahunan pada: \nTahun 1: ${rekapan.tahun1}\nTahun 2: ${rekapan.tahun2}`, "error");
                     return;
