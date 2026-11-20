@@ -93,7 +93,23 @@ function kirimCutiKeSupabase(nip, nama, sekolah, tglMulai, tglAkhir, durasi, sat
 
   if (insertRes.getResponseCode() >= 300) {
     Logger.log('Error Insert Supabase (' + insertRes.getResponseCode() + '): ' + insertRes.getContentText());
+    return { success: false, message: 'HTTP ' + insertRes.getResponseCode() + ': ' + insertRes.getContentText() };
   }
+
+  return { success: true, jumlahHari: payload.length };
+}
+
+function tesKoneksiSupabase() {
+  var res = UrlFetchApp.fetch(SUPABASE_URL + '/rest/v1/absensi?select=id&limit=1', {
+    method: 'get',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY
+    },
+    muteHttpExceptions: true
+  });
+  Logger.log('HTTP Code: ' + res.getResponseCode());
+  Logger.log('Response: ' + res.getContentText());
 }
 
 function simpanStatusAbsensiSupabase(nip, nama, sekolah, statusAbsensi, tglMulai, tglAkhir) {
@@ -279,7 +295,7 @@ function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, st
   }
 
   // Simpan per tanggal hari kerja ke tabel absensi Supabase
-  kirimCutiKeSupabase(nip, nama, sekolahPegawai, tglMulai, tglAkhir, durasi, satuan);
+  var hasilSupabase = kirimCutiKeSupabase(nip, nama, sekolahPegawai, tglMulai, tglAkhir, durasi, satuan);
 
   // Update sheet Rekapan (Khusus Cuti Tahunan dikelompokkan pada kolom Tahun Sekarang / Kolom 5)
   if (jenis.toLowerCase() === 'tahunan') {
@@ -300,7 +316,7 @@ function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, st
     }
   }
 
-  return "Saved";
+  return { status: "Saved", supabase: hasilSupabase || { success: true, jumlahHari: 0 } };
 }
 
 function simpanAkun(id, nip, nama, user, pass, role, isEdit) {
