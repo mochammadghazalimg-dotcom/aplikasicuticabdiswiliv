@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-TARA CUTI WIL IV</title>
+    <title>E-TRA CUTI WIL IV</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -54,7 +54,7 @@
                 <i id="logo-fallback" class="fas fa-university text-5xl text-edu-blue absolute" style="display: none;"></i>
             </div>
             
-            <h2 class="text-3xl font-extrabold text-gray-800 mb-2 tracking-tight">E-TARA CUTI ASN</h2>
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-2 tracking-tight">E-TRA CUTI ASN</h2>
             <p class="text-sm font-bold text-edu-blue mb-1 uppercase tracking-wide">Cabang Dinas Pendidikan Wil. IV</p>
             <p class="text-xs text-gray-500 mb-8 font-medium">Pemerintah Provinsi Sulawesi Selatan</p>
             
@@ -86,7 +86,7 @@
                           <img src="https://i.imgur.com/N8da60H.png" alt="Logo" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <h1 class="text-base font-bold leading-tight tracking-wide text-white">E-TARA CUTI</h1>
+                        <h1 class="text-base font-bold leading-tight tracking-wide text-white">E-TRA CUTI</h1>
                         <p class="text-[11px] text-blue-200 font-medium">Elektronik Tertib Administrasi Cuti</p>
                     </div>
                 </div>
