@@ -105,6 +105,9 @@
                 <a href="#" onclick="navigate('pengajuan')" class="nav-link block px-4 py-3 rounded-xl hover:bg-blue-800 hover:text-edu-gold transition-colors text-white font-medium" data-target="pengajuan">
                     <i class="fas fa-file-signature w-6 text-center"></i> Form Pengajuan
                 </a>
+                <a href="#" onclick="navigate('input-absensi-khusus')" class="nav-link block px-4 py-3 rounded-xl hover:bg-blue-800 hover:text-edu-gold transition-colors text-white font-medium" data-target="input-absensi-khusus">
+                    <i class="fas fa-briefcase-medical w-6 text-center"></i> Input DL / Sakit / Izin
+                </a>
                 <a href="#" onclick="navigate('riwayat')" class="nav-link block px-4 py-3 rounded-xl hover:bg-blue-800 hover:text-edu-gold transition-colors text-white font-medium" data-target="riwayat">
                     <i class="fas fa-history w-6 text-center"></i> Riwayat Cuti
                 </a>
@@ -324,6 +327,78 @@
                         </form>
                     </div>
                 </div>
+
+                <!-- INPUT DINAS LUAR / SAKIT / IZIN (KHUSUS SUPABASE) -->
+                <div id="view-input-absensi-khusus" class="page-view hidden fade-in">
+                    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                        <div class="flex items-center justify-between border-b pb-4 mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800">Form Input Dinas Luar / Sakit / Izin</h3>
+                                <p class="text-xs text-gray-500 mt-1">Data tersimpan langsung ke database absensi Supabase (tidak masuk Riwayat Cuti).</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <i class="fas fa-database mr-1"></i> Supabase Direct
+                            </span>
+                        </div>
+
+                        <form id="form-absensi-khusus" onsubmit="handleKonfirmasiAbsensiKhusus(event)">
+                            <!-- Langkah 1: Wajib pilih jenis terlebih dahulu -->
+                            <div class="mb-5">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">1. Pilih Jenis Keterangan <span class="text-red-500">*</span></label>
+                                <select id="absensi-jenis" required onchange="onChangeJenisAbsensiKhusus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue bg-white text-gray-700 font-semibold">
+                                    <option value="">-- Wajib Pilih: Dinas Luar / Sakit / Izin --</option>
+                                    <option value="DINAS LUAR">DINAS LUAR</option>
+                                    <option value="SAKIT">SAKIT</option>
+                                    <option value="IZIN">IZIN</option>
+                                </select>
+                            </div>
+
+                            <!-- Langkah 2: Cari NIP ASN -->
+                            <div class="mb-5">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">2. Cari Pegawai (Ketik NIP / NI PPPK) <span class="text-red-500">*</span></label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="absensi-nip-input" placeholder="Masukkan NIP..." oninput="resetHasilCariAbsensiKhusus()" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue bg-white text-gray-700">
+                                    <button type="button" onclick="cekDataASNAbsensiKhusus()" class="px-5 py-2.5 bg-edu-blue text-white rounded-lg hover:bg-blue-800 transition font-medium whitespace-nowrap shadow-md flex items-center gap-2">
+                                        <i class="fas fa-search"></i> Cari
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hasil Pencarian Data ASN -->
+                            <div id="absensi-detail-card" class="mb-5 hidden bg-blue-50/50 p-4 rounded-lg border border-blue-200 shadow-sm fade-in">
+                                <p class="text-sm font-bold text-edu-blue mb-2 border-b border-blue-100 pb-2">Informasi Pegawai Ditemukan</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                                    <div><span class="font-semibold text-gray-500">Nama:</span> <span id="absensi-detail-nama" class="font-bold text-gray-900"></span></div>
+                                    <div><span class="font-semibold text-gray-500">NIP:</span> <span id="absensi-detail-nip" class="font-mono font-medium"></span></div>
+                                    <div><span class="font-semibold text-gray-500">Status:</span> <span id="absensi-detail-status" class="font-medium"></span></div>
+                                    <div><span class="font-semibold text-gray-500">Jabatan:</span> <span id="absensi-detail-jabatan" class="font-medium"></span></div>
+                                    <div class="md:col-span-2"><span class="font-semibold text-gray-500">Sekolah:</span> <span id="absensi-detail-sekolah" class="font-bold text-edu-blue"></span></div>
+                                </div>
+                            </div>
+
+                            <!-- Langkah 3: Tanggal Mulai & Sampai Dengan Tanggal -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">3. Tanggal Mulai <span class="text-red-500">*</span></label>
+                                    <input type="date" id="absensi-mulai" required disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-gray-700 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">4. Sampai Dengan Tanggal <span class="text-red-500">*</span></label>
+                                    <input type="date" id="absensi-akhir" required disabled class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-edu-blue text-gray-700 disabled:bg-gray-100 disabled:cursor-not-allowed">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-3">
+                                <button type="button" onclick="loadFormAbsensiKhusus()" class="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition">Reset</button>
+                                <button type="submit" id="btn-submit-absensi-khusus" disabled class="px-6 py-2.5 rounded-lg bg-edu-blue text-white hover:bg-blue-800 font-medium transition shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2">
+                                    <i class="fas fa-paper-plane"></i> Kirim
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- RIWAYAT CUTI -->
 
                 <!-- RIWAYAT CUTI -->
                 <div id="view-riwayat" class="page-view hidden fade-in">
@@ -561,6 +636,36 @@
             </button>
         </div>
     </div>
+    <!-- Modal Message -->
+    <div id="modal-message" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center transform scale-95 opacity-0 transition-all duration-300" id="modal-message-content">
+            <div id="msg-icon" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4"></div>
+            <h3 id="msg-title" class="text-xl font-bold text-gray-800 mb-2">Title</h3>
+            <p id="msg-desc" class="text-gray-600 text-sm mb-6">Description</p>
+            <button onclick="closeModal('modal-message')" id="msg-btn" class="w-full px-4 py-2 rounded-xl text-white font-medium transition shadow-md">
+                Mengerti
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Kirim Dinas Luar / Sakit / Izin -->
+    <div id="modal-konfirmasi-absensi" class="fixed inset-0 z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center transform scale-95 opacity-0 transition-all duration-300" id="modal-konfirmasi-absensi-content">
+            <div class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl mb-4 bg-amber-100 text-amber-600">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Konfirmasi Pengiriman Data</h3>
+            <p id="konfirmasi-absensi-text" class="text-gray-700 text-sm font-medium bg-gray-50 p-3 rounded-xl border border-gray-200 mb-6 leading-relaxed"></p>
+            <div class="flex gap-3">
+                <button type="button" onclick="batalKirimAbsensiKhusus()" class="w-1/2 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 font-semibold transition">
+                    Batal
+                </button>
+                <button type="button" onclick="eksekusiKirimAbsensiKhusus()" class="w-1/2 px-4 py-2.5 rounded-xl bg-edu-blue text-white hover:bg-blue-800 font-semibold transition shadow-md">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Javascript Logic -->
     <script>
@@ -653,12 +758,20 @@
             const sidebar = document.getElementById('sidebar');
             if (sidebar) sidebar.classList.add('hidden');
             
-            const titles = { 'dashboard': 'Dashboard Utama', 'data-asn': 'Manajemen Data ASN', 'pengajuan': 'Form Pengajuan Cuti', 'riwayat': 'Riwayat Pengajuan Cuti', 'manajemen-akun': 'Manajemen Sistem Akun Admin' };
+            const titles = {
+                'dashboard': 'Dashboard Utama',
+                'data-asn': 'Manajemen Data ASN',
+                'pengajuan': 'Form Pengajuan Cuti',
+                'input-absensi-khusus': 'Input Dinas Luar / Sakit / Izin',
+                'riwayat': 'Riwayat Pengajuan Cuti',
+                'manajemen-akun': 'Manajemen Sistem Akun Admin'
+            };
             document.getElementById('page-title').innerText = titles[pageId];
 
             if(pageId === 'dashboard') loadDashboard();
             if(pageId === 'data-asn') loadDataASN();
             if(pageId === 'pengajuan') loadFormPengajuan();
+            if(pageId === 'input-absensi-khusus') loadFormAbsensiKhusus();
             if(pageId === 'riwayat') loadRiwayat();
             if(pageId === 'manajemen-akun') loadManajemenAkun();
         }
@@ -885,6 +998,165 @@
                 document.getElementById('asn-detail-card').classList.remove('hidden');
                 updateFormRules(asn.nip);
             }
+        }
+
+        // --- LOGIKA TAHAP 2: INPUT DINAS LUAR / SAKIT / IZIN (SUPABASE) ---
+        let selectedASNAbsensiKhusus = null;
+        let pendingPayloadAbsensiKhusus = null;
+
+        function loadFormAbsensiKhusus() {
+            selectedASNAbsensiKhusus = null;
+            pendingPayloadAbsensiKhusus = null;
+            const form = document.getElementById('form-absensi-khusus');
+            if (form) form.reset();
+            document.getElementById('absensi-detail-card').classList.add('hidden');
+            document.getElementById('absensi-mulai').disabled = true;
+            document.getElementById('absensi-akhir').disabled = true;
+            document.getElementById('btn-submit-absensi-khusus').disabled = true;
+        }
+
+        function onChangeJenisAbsensiKhusus() {
+            const jenis = document.getElementById('absensi-jenis').value;
+            if (!jenis) {
+                document.getElementById('absensi-mulai').disabled = true;
+                document.getElementById('absensi-akhir').disabled = true;
+                document.getElementById('btn-submit-absensi-khusus').disabled = true;
+            } else if (selectedASNAbsensiKhusus) {
+                document.getElementById('absensi-mulai').disabled = false;
+                document.getElementById('absensi-akhir').disabled = false;
+                document.getElementById('btn-submit-absensi-khusus').disabled = false;
+            }
+        }
+
+        function resetHasilCariAbsensiKhusus() {
+            selectedASNAbsensiKhusus = null;
+            document.getElementById('absensi-detail-card').classList.add('hidden');
+            document.getElementById('absensi-mulai').disabled = true;
+            document.getElementById('absensi-akhir').disabled = true;
+            document.getElementById('btn-submit-absensi-khusus').disabled = true;
+        }
+
+        function cekDataASNAbsensiKhusus() {
+            const jenis = document.getElementById('absensi-jenis').value;
+            if (!jenis) {
+                showMessage('Peringatan', 'Silahkan pilih jenis keterangan (Dinas Luar / Sakit / Izin) terlebih dahulu.', 'warning');
+                document.getElementById('absensi-jenis').focus();
+                return;
+            }
+
+            const nip = document.getElementById('absensi-nip-input').value.trim();
+            if (!nip) {
+                showMessage('Peringatan', 'Silahkan ketik NIP terlebih dahulu.', 'warning');
+                return;
+            }
+
+            const asn = dbASN.find(a => a.nip == nip);
+            if (!asn) {
+                resetHasilCariAbsensiKhusus();
+                showMessage('Data Tidak Ditemukan', 'DATA ASN TIDAK TERSEDIA SILAHKAN INPUT DI MENU DATA ASN TERLEBIH DAHULU', 'error');
+                return;
+            }
+
+            if (!asn.nama || !asn.jabatan || !asn.sekolah || asn.jabatan.trim() === '-' || asn.sekolah.trim() === '-') {
+                resetHasilCariAbsensiKhusus();
+                showMessage('Peringatan', 'DATA PEGAWAI BELUM LENGKAP SILAHKAN LENGKAPI DI MENU DATA PEGAWAI', 'warning');
+                return;
+            }
+
+            selectedASNAbsensiKhusus = asn;
+            document.getElementById('absensi-detail-nama').innerText = asn.nama;
+            document.getElementById('absensi-detail-nip').innerText = asn.nip;
+            document.getElementById('absensi-detail-status').innerText = asn.status;
+            document.getElementById('absensi-detail-jabatan').innerText = asn.jabatan;
+            document.getElementById('absensi-detail-sekolah').innerText = asn.sekolah;
+            document.getElementById('absensi-detail-card').classList.remove('hidden');
+
+            document.getElementById('absensi-mulai').disabled = false;
+            document.getElementById('absensi-akhir').disabled = false;
+            document.getElementById('btn-submit-absensi-khusus').disabled = false;
+        }
+
+        function handleKonfirmasiAbsensiKhusus(e) {
+            e.preventDefault();
+            const jenis = document.getElementById('absensi-jenis').value;
+            const tglMulai = document.getElementById('absensi-mulai').value;
+            const tglAkhir = document.getElementById('absensi-akhir').value;
+
+            if (!jenis) {
+                showMessage('Peringatan', 'Silahkan pilih jenis keterangan (Dinas Luar / Sakit / Izin) terlebih dahulu.', 'warning');
+                return;
+            }
+            if (!selectedASNAbsensiKhusus) {
+                showMessage('Peringatan', 'Silahkan klik tombol Cari untuk memverifikasi data ASN terlebih dahulu.', 'warning');
+                return;
+            }
+            if (!tglMulai || !tglAkhir) {
+                showMessage('Validasi Gagal', 'Mohon isi Tanggal Mulai dan Sampai Dengan Tanggal.', 'warning');
+                return;
+            }
+            if (tglAkhir < tglMulai) {
+                showMessage('Validasi Gagal', 'Sampai Dengan Tanggal tidak boleh lebih kecil dari Tanggal Mulai.', 'error');
+                return;
+            }
+
+            pendingPayloadAbsensiKhusus = {
+                nip: selectedASNAbsensiKhusus.nip,
+                nama: selectedASNAbsensiKhusus.nama,
+                sekolah: selectedASNAbsensiKhusus.sekolah,
+                jenis: jenis,
+                tglMulai: tglMulai,
+                tglAkhir: tglAkhir
+            };
+
+            const teksKonfirmasi = `ASN (${selectedASNAbsensiKhusus.nama}, ${selectedASNAbsensiKhusus.nip}, ${selectedASNAbsensiKhusus.sekolah}) ${jenis} dari tanggal ${tglMulai} s.d. ${tglAkhir}`;
+            document.getElementById('konfirmasi-absensi-text').innerText = teksKonfirmasi;
+
+            const modal = document.getElementById('modal-konfirmasi-absensi');
+            const overlay = document.getElementById('modal-overlay');
+            const content = document.getElementById('modal-konfirmasi-absensi-content');
+            modal.classList.remove('hidden');
+            overlay.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function batalKirimAbsensiKhusus() {
+            pendingPayloadAbsensiKhusus = null;
+            closeModal('modal-konfirmasi-absensi');
+        }
+
+        function eksekusiKirimAbsensiKhusus() {
+            if (!pendingPayloadAbsensiKhusus) return;
+            const dataKirim = { ...pendingPayloadAbsensiKhusus };
+            pendingPayloadAbsensiKhusus = null;
+            closeModal('modal-konfirmasi-absensi');
+
+            const btn = document.getElementById('btn-submit-absensi-khusus');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim ke Supabase...';
+            btn.disabled = true;
+
+            google.script.run
+                .withFailureHandler(function(err) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                    showMessage('Gagal Mengirim', 'Terjadi kesalahan sistem: ' + err.message, 'error');
+                })
+                .withSuccessHandler(function(res) {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+
+                    if (res && res.success) {
+                        let infoTambahan = res.dilewati > 0 ? ` (${res.dilewati} tanggal dilewati karena sudah tercatat sebelumnya)` : '';
+                        showMessage('Berhasil Tersimpan', `Data ${dataKirim.jenis} untuk ${dataKirim.nama} sebanyak ${res.jumlahHari} hari kerja berhasil dikirim ke Supabase${infoTambahan}.`, 'success');
+                        loadFormAbsensiKhusus();
+                    } else {
+                        showMessage('Gagal Menyimpan', (res && res.message) ? res.message : 'Gagal menyimpan data ke Supabase.', 'error');
+                    }
+                })
+                .simpanStatusAbsensiSupabase(dataKirim.nip, dataKirim.nama, dataKirim.sekolah, dataKirim.jenis, dataKirim.tglMulai, dataKirim.tglAkhir);
         }
 
         function updateFormRules(nip) {
