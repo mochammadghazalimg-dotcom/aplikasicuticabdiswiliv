@@ -1,6 +1,178 @@
 // Ganti dengan ID Spreadsheet Anda
 const SHEET_ID = '1K4Qa62tNBK7yHU32g43RoeANaV8sqXa_5LcGTBxYQJw';
 
+// Konfigurasi Supabase (Tahap 1: Sinkronisasi Cuti)
+const SUPABASE_URL = 'https://rulvwumuhlzzehwkibup.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bHZ3dW11aGx6emVod2tpYnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODYzNzMsImV4cCI6MjEwNjI2MjM3M30.-zFMHuGQRiPsBEsgOINZI4r6tEeUTFgnMcX4CN85t8Y';
+
+function generateTanggalHariKerjaCuti(tglMulai, tglAkhir, durasi, satuan) {
+  var pMulai = String(tglMulai).split('-');
+  var cur = new Date(Date.UTC(parseInt(pMulai[0], 10), parseInt(pMulai[1], 10) - 1, parseInt(pMulai[2], 10)));
+  var hasilTanggal = [];
+
+  if (String(satuan).toLowerCase() === 'hari') {
+    var targetHari = parseInt(durasi, 10) || 1;
+    while (hasilTanggal.length < targetHari) {
+      var day = cur.getUTCDay(); // 0 = Minggu, 6 = Sabtu
+      if (day !== 0 && day !== 6) {
+        hasilTanggal.push(cur.toISOString().split('T')[0]);
+      }
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
+  } else {
+    var pAkhir = String(tglAkhir).split('-');
+    var end = new Date(Date.UTC(parseInt(pAkhir[0], 10), parseInt(pAkhir[1], 10) - 1, parseInt(pAkhir[2], 10)));
+    while (cur <= end) {
+      var d = cur.getUTCDay();
+      if (d !== 0 && d !== 6) {
+        hasilTanggal.push(cur.toISOString().split('T')[0]);
+      }
+      cur.setUTCDate(cur.getUTCDate() + 1);
+    }
+  }
+  return hasilTanggal;
+}
+
+function kirimCutiKeSupabase(nip, nama, sekolah, tglMulai, tglAkhir, durasi, satuan) {
+  if (!SUPABASE_KEY || SUPABASE_KEY === 'PASTE_ANON_PUBLIC_KEY_SUPABASE_ANDA_DISINI') {
+    Logger.log('SUPABASE_KEY belum diisi.');
+    return;
+  }
+
+  var nipClean = String(nip).replace(/\D/g, '');
+  var daftarTanggal = generateTanggalHariKerjaCuti(tglMulai, tglAkhir, durasi, satuan);
+  if (daftarTanggal.length === 0) return;
+
+  var headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
+
+  // Cek tanggal yang sudah ada di tabel absensi agar tidak duplikat
+  var checkUrl = SUPABASE_URL + '/rest/v1/absensi?select=tanggal&nip=eq.' + encodeURIComponent(nipClean) +
+                 '&tanggal=in.(' + daftarTanggal.join(',') + ')';
+  var existingDates = {};
+  try {
+    var checkRes = UrlFetchApp.fetch(checkUrl, { method: 'get', headers: headers, muteHttpExceptions: true });
+    if (checkRes.getResponseCode() === 200) {
+      var rows = JSON.parse(checkRes.getContentText());
+      rows.forEach(function(r) { existingDates[r.tanggal] = true; });
+    }
+  } catch (e) {
+    Logger.log('Gagal cek duplikat Supabase: ' + e.message);
+  }
+
+  // Siapkan payload per hari kerja sesuai kolom tabel absensi Supabase
+  var payload = [];
+  for (var i = 0; i < daftarTanggal.length; i++) {
+    var tgl = daftarTanggal[i];
+    if (!existingDates[tgl]) {
+      payload.push({
+        nip: nipClean,
+        nama: String(nama).trim(),
+        sekolah: String(sekolah || '-').trim(),
+        tanggal: tgl,
+        jam: null,
+        jarak_m: null,
+        status: 'CUTI',
+        foto_bukti: null
+      });
+    }
+  }
+
+  if (payload.length === 0) return;
+
+  var insertRes = UrlFetchApp.fetch(SUPABASE_URL + '/rest/v1/absensi', {
+    method: 'post',
+    headers: headers,
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+
+  if (insertRes.getResponseCode() >= 300) {
+    Logger.log('Error Insert Supabase (' + insertRes.getResponseCode() + '): ' + insertRes.getContentText());
+  }
+}
+
+function simpanStatusAbsensiSupabase(nip, nama, sekolah, statusAbsensi, tglMulai, tglAkhir) {
+  if (!SUPABASE_KEY || SUPABASE_KEY === 'PASTE_ANON_PUBLIC_KEY_SUPABASE_ANDA_DISINI') {
+    return { success: false, message: 'Konfigurasi SUPABASE_KEY belum diisi di Code.gs.' };
+  }
+
+  var nipClean = String(nip).replace(/\D/g, '');
+  var statusClean = String(statusAbsensi || '').trim().toUpperCase();
+  if (['DINAS LUAR', 'SAKIT', 'IZIN'].indexOf(statusClean) === -1) {
+    return { success: false, message: 'Jenis status tidak valid.' };
+  }
+
+  // Pecah rentang tanggal menjadi hari kerja (Senin - Jumat)
+  var daftarTanggal = generateTanggalHariKerjaCuti(tglMulai, tglAkhir, 0, 'range');
+  if (daftarTanggal.length === 0) {
+    return { success: false, message: 'Rentang tanggal yang dipilih hanya berisi hari libur (Sabtu/Minggu).' };
+  }
+
+  var headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal'
+  };
+
+  // Cek tanggal yang sudah ada agar tidak duplikat di Supabase
+  var checkUrl = SUPABASE_URL + '/rest/v1/absensi?select=tanggal&nip=eq.' + encodeURIComponent(nipClean) +
+                 '&tanggal=in.(' + daftarTanggal.join(',') + ')';
+  var existingDates = {};
+  try {
+    var checkRes = UrlFetchApp.fetch(checkUrl, { method: 'get', headers: headers, muteHttpExceptions: true });
+    if (checkRes.getResponseCode() === 200) {
+      var rows = JSON.parse(checkRes.getContentText());
+      rows.forEach(function(r) { existingDates[r.tanggal] = true; });
+    }
+  } catch (e) {
+    Logger.log('Gagal cek duplikat Supabase: ' + e.message);
+  }
+
+  var payload = [];
+  for (var i = 0; i < daftarTanggal.length; i++) {
+    var tgl = daftarTanggal[i];
+    if (!existingDates[tgl]) {
+      payload.push({
+        nip: nipClean,
+        nama: String(nama).trim(),
+        sekolah: String(sekolah || '-').trim(),
+        tanggal: tgl,
+        jam: null,
+        jarak_m: null,
+        status: statusClean,
+        foto_bukti: null
+      });
+    }
+  }
+
+  if (payload.length === 0) {
+    return { success: false, message: 'Semua tanggal pada rentang tersebut sudah tercatat di Supabase untuk NIP ini.' };
+  }
+
+  var insertRes = UrlFetchApp.fetch(SUPABASE_URL + '/rest/v1/absensi', {
+    method: 'post',
+    headers: headers,
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+
+  if (insertRes.getResponseCode() >= 300) {
+    return { success: false, message: 'Gagal menyimpan ke Supabase (' + insertRes.getResponseCode() + '): ' + insertRes.getContentText() };
+  }
+
+  return {
+    success: true,
+    jumlahHari: payload.length,
+    dilewati: daftarTanggal.length - payload.length
+  };
+}
+
 function doGet() {
   return HtmlService.createHtmlOutputFromFile('Index')
     .setTitle('E-TRA CUTI - Cabdin Wil IV')
@@ -95,14 +267,19 @@ function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, st
   var sheetCuti = ss.getSheetByName("Riwayat_Cuti");
   sheetCuti.appendRow([id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan]);
   
+  var sekolahPegawai = "-";
   var sheetASN = ss.getSheetByName("Data_ASN");
   var dataASN = sheetASN.getDataRange().getValues();
   for (var i = 1; i < dataASN.length; i++) {
     if (dataASN[i][0] == nip) {
+      sekolahPegawai = dataASN[i][4] || "-";
       sheetASN.getRange(i + 1, 6).setValue(updatedCutiDiambilStr);
       break;
     }
   }
+
+  // Simpan per tanggal hari kerja ke tabel absensi Supabase
+  kirimCutiKeSupabase(nip, nama, sekolahPegawai, tglMulai, tglAkhir, durasi, satuan);
 
   // Update sheet Rekapan (Khusus Cuti Tahunan dikelompokkan pada kolom Tahun Sekarang / Kolom 5)
   if (jenis.toLowerCase() === 'tahunan') {
