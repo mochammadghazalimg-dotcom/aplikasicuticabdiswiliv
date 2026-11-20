@@ -1450,6 +1450,7 @@
                 }
                 navigate('riwayat');
             }).simpanCuti(newId, asn.nip, asn.nama, jenis, mulai, tglAkhir, durasi, satuan, 'Disetujui', today, alasan, JSON.stringify(asn.cutiDiambil));
+        }
 
         function prosesCuti(id, statusTujuan) {
             const cuti = dbCuti.find(c => c.id === id);
