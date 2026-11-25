@@ -659,6 +659,7 @@
     <!-- Javascript Logic -->
     <script>
         let dbRekapan = [];
+        let dbHariLibur = [];
         let tambahanKuotaLokal = 0; // Untuk menyimpan sementara akumulasi tambahan
         let dbUsers = [];
         let dbASN = [];
@@ -695,6 +696,7 @@
                 dbASN = data.dbASN;
                 dbCuti = data.dbCuti;
                 dbRekapan = data.dbRekapan || [];
+                dbHariLibur = data.dbHariLibur || [];
                 // Cek apakah butuh memunculkan popup awal tahun
                 if (data.showPopupAwalTahun) {
                     showMessage("Informasi Sistem", "System sudah melakukan update data pada data base Rekapan silahkan melapor ke Ghazali untuk pengecekan", "info");
@@ -1472,18 +1474,58 @@
             }
         }
 
+        function isHariLiburAtauAkhirPekan(dateObjUTC, setLibur) {
+            const day = dateObjUTC.getUTCDay(); // 0 = Minggu, 6 = Sabtu
+            if (day === 0 || day === 6) return true;
+            const iso = dateObjUTC.toISOString().split('T')[0];
+            return setLibur.has(iso);
+        }
+
         function calculateEndDate() {
-            const mulai = document.getElementById('cuti-mulai').value;
-            const durasi = parseInt(document.getElementById('cuti-durasi').value);
+            const mulaiInput = document.getElementById('cuti-mulai');
+            const mulai = mulaiInput.value;
+            const durasi = parseInt(document.getElementById('cuti-durasi').value, 10);
             const satuan = document.getElementById('cuti-satuan').value;
             const outputAkhir = document.getElementById('cuti-akhir');
 
-            if (mulai && durasi && !isNaN(durasi)) {
-                let date = new Date(mulai);
-                if (satuan === 'hari') date.setDate(date.getDate() + (durasi - 1));
-                else if (satuan === 'bulan') { date.setMonth(date.getMonth() + durasi); date.setDate(date.getDate() - 1); }
-                outputAkhir.value = date.toISOString().split('T')[0];
-            } else outputAkhir.value = '';
+            if (!mulai) {
+                outputAkhir.value = '';
+                return;
+            }
+
+            const setLibur = new Set(dbHariLibur || []);
+            const parts = mulai.split('-');
+            let cur = new Date(Date.UTC(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)));
+
+            // Pastikan Tanggal Mulai adalah hari kerja (bukan Sabtu, Minggu, atau Tanggal Merah)
+            if (isHariLiburAtauAkhirPekan(cur, setLibur)) {
+                mulaiInput.value = '';
+                outputAkhir.value = '';
+                showMessage(
+                    'Tanggal Mulai Hari Libur',
+                    'Tanggal mulai yang dipilih jatuh pada hari Sabtu, Minggu, atau Tanggal Merah. Silakan pilih hari kerja (Senin s.d. Jumat).',
+                    'warning'
+                );
+                return;
+            }
+
+            if (durasi && !isNaN(durasi) && durasi > 0) {
+                // Konversi 1 bulan = 22 hari kerja (3 bulan = 66 hari kerja)
+                const targetHariKerja = (satuan === 'bulan') ? (durasi * 22) : durasi;
+                let hariKerjaTerhitung = 0;
+                let lastValidDate = new Date(cur.getTime());
+
+                while (hariKerjaTerhitung < targetHariKerja) {
+                    if (!isHariLiburAtauAkhirPekan(cur, setLibur)) {
+                        hariKerjaTerhitung++;
+                        lastValidDate = new Date(cur.getTime());
+                    }
+                    cur.setUTCDate(cur.getUTCDate() + 1);
+                }
+                outputAkhir.value = lastValidDate.toISOString().split('T')[0];
+            } else {
+                outputAkhir.value = '';
+            }
         }
 
         function downloadTemplate() {
