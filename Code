@@ -5,7 +5,80 @@ const SHEET_ID = '1K4Qa62tNBK7yHU32g43RoeANaV8sqXa_5LcGTBxYQJw';
 const SUPABASE_URL = 'https://rulvwumuhlzzehwkibup.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bHZ3dW11aGx6emVod2tpYnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2ODYzNzMsImV4cCI6MjEwNjI2MjM3M30.-zFMHuGQRiPsBEsgOINZI4r6tEeUTFgnMcX4CN85t8Y';
 
+function initSheetHariLibur(ss) {
+  var targetSS = ss || SpreadsheetApp.openById(SHEET_ID);
+  var sheet = targetSS.getSheetByName("Hari_Libur");
+  if (!sheet) {
+    sheet = targetSS.insertSheet("Hari_Libur");
+    sheet.appendRow(["Tanggal", "Keterangan"]);
+  }
+  if (sheet.getLastRow() <= 1) {
+    var defaultLibur2026 = [
+      ["2026-01-01", "Tahun Baru 2026 Masehi"],
+      ["2026-01-16", "Isra Mikraj Nabi Muhammad SAW"],
+      ["2026-02-16", "Cuti Bersama Tahun Baru Imlek 2577 Kongzili"],
+      ["2026-02-17", "Tahun Baru Imlek 2577 Kongzili"],
+      ["2026-03-18", "Cuti Bersama Hari Suci Nyepi"],
+      ["2026-03-19", "Hari Suci Nyepi (Tahun Baru Saka 1948)"],
+      ["2026-03-20", "Cuti Bersama Hari Raya Idul Fitri 1447 H"],
+      ["2026-03-21", "Hari Raya Idul Fitri 1447 Hijriah"],
+      ["2026-03-22", "Hari Raya Idul Fitri 1447 Hijriah"],
+      ["2026-03-23", "Cuti Bersama Hari Raya Idul Fitri 1447 H"],
+      ["2026-03-24", "Cuti Bersama Hari Raya Idul Fitri 1447 H"],
+      ["2026-04-03", "Wafat Yesus Kristus"],
+      ["2026-04-05", "Kebangkitan Yesus Kristus (Paskah)"],
+      ["2026-05-01", "Hari Buruh Internasional"],
+      ["2026-05-14", "Kenaikan Yesus Kristus"],
+      ["2026-05-15", "Cuti Bersama Kenaikan Yesus Kristus"],
+      ["2026-05-27", "Hari Raya Idul Adha 1447 Hijriah"],
+      ["2026-05-28", "Cuti Bersama Hari Raya Idul Adha 1447 H"],
+      ["2026-05-31", "Hari Raya Waisak 2570 BE"],
+      ["2026-06-01", "Hari Lahir Pancasila"],
+      ["2026-06-16", "1 Muharam Tahun Baru Islam 1448 Hijriah"],
+      ["2026-08-17", "Proklamasi Kemerdekaan RI"],
+      ["2026-08-25", "Maulid Nabi Muhammad SAW"],
+      ["2026-12-24", "Cuti Bersama Kelahiran Yesus Kristus"],
+      ["2026-12-25", "Kelahiran Yesus Kristus (Natal)"]
+    ];
+    var range = sheet.getRange(2, 1, defaultLibur2026.length, 2);
+    range.setNumberFormat("@");
+    range.setValues(defaultLibur2026);
+  }
+  return sheet;
+}
+
+function getDaftarHariLibur(ss) {
+  var targetSS = ss || SpreadsheetApp.openById(SHEET_ID);
+  var sheet = initSheetHariLibur(targetSS);
+  var data = sheet.getDataRange().getValues().slice(1);
+  var tz = Session.getScriptTimeZone();
+  var hasil = [];
+
+  for (var i = 0; i < data.length; i++) {
+    var raw = data[i][0];
+    if (!raw) continue;
+    var tglStr = "";
+    if (raw instanceof Date) {
+      tglStr = Utilities.formatDate(raw, tz, "yyyy-MM-dd");
+    } else {
+      var s = String(raw).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        tglStr = s;
+      } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(s)) {
+        var p = s.split("/");
+        tglStr = p[2] + "-" + ("0" + p[1]).slice(-2) + "-" + ("0" + p[0]).slice(-2);
+      }
+    }
+    if (tglStr) hasil.push(tglStr);
+  }
+  return hasil;
+}
+
 function generateTanggalHariKerjaCuti(tglMulai, tglAkhir, durasi, satuan) {
+  var daftarLibur = getDaftarHariLibur();
+  var mapLibur = {};
+  daftarLibur.forEach(function(t) { mapLibur[t] = true; });
+
   var pMulai = String(tglMulai).split('-');
   var cur = new Date(Date.UTC(parseInt(pMulai[0], 10), parseInt(pMulai[1], 10) - 1, parseInt(pMulai[2], 10)));
   var hasilTanggal = [];
@@ -14,8 +87,9 @@ function generateTanggalHariKerjaCuti(tglMulai, tglAkhir, durasi, satuan) {
     var targetHari = parseInt(durasi, 10) || 1;
     while (hasilTanggal.length < targetHari) {
       var day = cur.getUTCDay(); // 0 = Minggu, 6 = Sabtu
-      if (day !== 0 && day !== 6) {
-        hasilTanggal.push(cur.toISOString().split('T')[0]);
+      var iso = cur.toISOString().split('T')[0];
+      if (day !== 0 && day !== 6 && !mapLibur[iso]) {
+        hasilTanggal.push(iso);
       }
       cur.setUTCDate(cur.getUTCDate() + 1);
     }
@@ -24,8 +98,9 @@ function generateTanggalHariKerjaCuti(tglMulai, tglAkhir, durasi, satuan) {
     var end = new Date(Date.UTC(parseInt(pAkhir[0], 10), parseInt(pAkhir[1], 10) - 1, parseInt(pAkhir[2], 10)));
     while (cur <= end) {
       var d = cur.getUTCDay();
-      if (d !== 0 && d !== 6) {
-        hasilTanggal.push(cur.toISOString().split('T')[0]);
+      var isoEnd = cur.toISOString().split('T')[0];
+      if (d !== 0 && d !== 6 && !mapLibur[isoEnd]) {
+        hasilTanggal.push(isoEnd);
       }
       cur.setUTCDate(cur.getUTCDate() + 1);
     }
@@ -275,7 +350,9 @@ function getDB() {
     return { nip: r[0], nama: r[1], tahun1: t1, tahun2: t2, tahunSekarang: tSekarang };
   }).filter(function(rk){ return rk.nip; });
 
-  return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti, dbRekapan: dbRekapan, showPopupAwalTahun: showGhazaliPopup };
+  var dbHariLibur = getDaftarHariLibur(ss);
+
+  return { dbUsers: dbUsers, dbASN: dbASN, dbCuti: dbCuti, dbRekapan: dbRekapan, dbHariLibur: dbHariLibur, showPopupAwalTahun: showGhazaliPopup };
 }
 
 function simpanCuti(id, nip, nama, jenis, tglMulai, tglAkhir, durasi, satuan, status, tglAju, alasan, updatedCutiDiambilStr) {
